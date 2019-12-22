@@ -7,14 +7,17 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('signup/', views.signup, name='signup'),
     path('userinfo/', views.userinfo, name='userinfo'),
+
     path('calendar/month/<int:year>/<int:month>/', views.calendarMonth, name='calendarMonth'),
     path('calendar/date/<int:year>/<int:month>/<int:date>/', views.calendarDate, name='calendarDate'),
     
     path('api/events/', views.events),
     path('api/events/<int:id>/', views.event),
     path('api/events/<int:id>/participate/'),
-    path('api/events/<int:id>/rating'),
-    path('api/search/<str:keyword>'),
-    path()
+    path('api/events/<int:id>/rating/'),
+    path('api/events/<int:id>/comments/'),
+    path('api/events/<int:id>/comments/<int:cid>/'),
+
+    path('api/search/<str:keyword>/'),
     
 ]
