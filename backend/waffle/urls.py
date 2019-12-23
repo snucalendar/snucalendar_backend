@@ -8,8 +8,8 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('userinfo/', views.getUserInfo, name='userinfo'),
 
-    path('calendar/month/<int:year>/<int:month>/', views.calendarMonth, name='calendarMonth'),
-    path('calendar/date/<int:year>/<int:month>/<int:date>/', views.calendarDate, name='calendarDate'),
+    path('calendar/<int:year>/<int:month>/', views.calendarMonth, name='calendarMonth'),
+    path('calendar/<int:year>/<int:month>/<int:date>/', views.calendarDate, name='calendarDate'),
     
     path('api/events/', views.events, name = 'events'),
     path('api/events/<int:id>/', views.event, name = 'event'),
