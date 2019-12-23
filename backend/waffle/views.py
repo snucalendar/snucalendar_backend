@@ -2,7 +2,9 @@ import json
 from json import JSONDecodeError
 from datetime import datetime, date
 
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -28,16 +30,21 @@ def login(request):
         except (KeyError, JSONDecodeError):
             return HttpResponseBadRequest()
 
-        user = authenticate(email=email, password=password)
+        user = authenticate(username=email, password=password)
         if user is not None:
-            login(request, user)
+            auth_login(request, user)
             return HttpResponse(status=204)
         else:
             return HttpResponse(status=401)
 
     else:
         return HttpResponseNotAllowed(['POST'])
-
+def logout(request):
+    if request.method == 'GET':
+        auth_logout(request)
+        return HttpResponse(status=204)
+    else:
+        return HttpResponseBadRequest(['GET'])
 def signup(request):  # create new
     if request.method == 'POST':
         try:

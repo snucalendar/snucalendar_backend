@@ -25,7 +25,7 @@ SECRET_KEY = '=c12^i_a2w+@tc8$romt0&2pok#%eutz2wsmsti07-x7hn*+o5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.59.128.56']
+ALLOWED_HOSTS = ['13.59.128.56', 'localhost']
 
 
 # Application definition
@@ -100,7 +100,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CSRF_COOKIE_NAME = "csrftoken"
 
+AUTHENTICATION_BACKENDS = ['backend.authenticate.EmailBackend']
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
