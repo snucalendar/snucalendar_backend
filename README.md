@@ -1,6 +1,6 @@
-#API (json)
+# API (json)
 
-##POST api/login/
+## POST api/login/
 ``` json
 {
     "email" : "email@naver.com",
@@ -9,9 +9,9 @@
 }
 ```
 
-##GET api/logout/
+## GET api/logout/
 
-##POST api/signup/
+## POST api/signup/
 ``` json
 {
     "email" : "email@naver.com",
