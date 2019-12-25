@@ -1,6 +1,7 @@
 # API
 
-## POST api/login/
+## POST api/login
+##### Request
 ``` json
 {
     "email" : "email@naver.com",
@@ -9,9 +10,9 @@
 }
 ```
 
-## GET api/logout/
+## GET api/logout
 
-## POST api/signup/
+## POST api/signup
 ``` json
 {
     "email" : "email@naver.com",
@@ -19,7 +20,7 @@
     "password" : "password",
 }
 ```
-## GET api/userinfo/
+## GET api/userinfo
 ``` json 
 {
     "email" : "email@naver.com",
@@ -27,7 +28,7 @@
 }
 ```
 
-## GET /api/calendar/<int:year>/<int:month>/
+## GET /api/calendar/<int:year>/<int:month>
 ``` json
 [
     {
@@ -43,5 +44,18 @@
         "events" : ["list of events"]
     },
     
+
 ]
 ```
+
+## GET /api/calendar/<int:year>/<int:month>/<int:date>
+``` json
+{
+    "year" : 2019,
+    "month" : 12,
+    "date" : 25,
+    "events" : ["list of events"]
+}
+```
+
+## POST /api/events
