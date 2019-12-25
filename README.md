@@ -11,6 +11,7 @@
 ```
 
 ## GET api/logout
+##### no json
 
 ## POST api/signup
 ##### Request
@@ -101,6 +102,7 @@
 ```
 
 ## DELETE /api/events/<int:id>
+##### no json
 
 ## POST /api/events/<int:id>/participate
 ##### Request
