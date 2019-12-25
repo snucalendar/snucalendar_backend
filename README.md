@@ -34,14 +34,14 @@
         "year" : 2019,
         "month" : 12,
         "date" : 1,
-        "events" : [list of events]
+        "events" : ["list of events"]
     },
     {
         "year" : 2019,
         "month" : 12,
         "date" : 2,
-        "events" : [list of events]
+        "events" : ["list of events"]
     },
-    ...
+    
 ]
 ```
