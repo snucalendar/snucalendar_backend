@@ -191,7 +191,7 @@ def event(request, id):
             event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
-        event.delete();
+        event.delete()
         return HttpResponse(status = 200)
     else:
         return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])

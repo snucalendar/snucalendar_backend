@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['13.59.128.56', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'users.apps.UsersConfig',
     'waffle.apps.WaffleConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -67,6 +68,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL = 'users.CalendarUser'
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 

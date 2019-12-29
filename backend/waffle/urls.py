@@ -11,15 +11,15 @@ urlpatterns = [
     path('calendar/<int:year>/<int:month>/', views.calendarMonth, name='calendarMonth'),
     path('calendar/<int:year>/<int:month>/<int:date>/', views.calendarDate, name='calendarDate'),
     
-    path('api/events/', views.events, name = 'events'),
-    path('api/events/<int:id>/', views.event, name = 'event'),
-    path('api/events/<int:id>/participate/', views.participate, name = 'participate'),
-    path('api/events/<int:id>/rating/', views.rating, name = 'rating'),
-    path('api/events/<int:id>/comments/', views.comments, name='comments'),
-    path('api/events/<int:id>/comments/<int:cid>/', views.comment, name='comment'),
+    path('events/', views.events, name = 'events'),
+    path('events/<int:id>/', views.event, name = 'event'),
+    path('events/<int:id>/participate/', views.participate, name = 'participate'),
+    path('events/<int:id>/rating/', views.rating, name = 'rating'),
+    path('events/<int:id>/comments/', views.comments, name='comments'),
+    path('events/<int:id>/comments/<int:cid>/', views.comment, name='comment'),
 
-    path('api/search/<str:keyword>/', views.search, name='search'),
+    path('search/<str:keyword>/', views.search, name='search'),
 
-    path('api/myevents/', views.myevents, name = 'myevents')
+    path('myevents/', views.myevents, name = 'myevents')
     
 ]
