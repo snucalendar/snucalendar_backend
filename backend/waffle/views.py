@@ -8,7 +8,8 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .models import Event, Rating, Comment, CalendarUser
+from .models import Event, Rating, Comment
+from users.models import CalendarUser
 
 
 
