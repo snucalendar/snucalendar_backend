@@ -5,13 +5,12 @@ from datetime import datetime, date
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from users import CalendarUser
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from .models import Event, Rating, Comment
 
-# Create your views here.
 
 
 @ensure_csrf_cookie
@@ -39,12 +38,14 @@ def login(request):
 
     else:
         return HttpResponseNotAllowed(['POST'])
+
 def logout(request):
     if request.method == 'GET':
         auth_logout(request)
         return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest(['GET'])
+
 def signup(request):  # create new
     if request.method == 'POST':
         try:
@@ -54,10 +55,10 @@ def signup(request):  # create new
             email = req_data['email']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
-        if User.objects.filter(username=username).exists():
+        if CalendarUser.objects.filter(username=username).exists():
             return HttpResponse(status=400)
 
-        User.objects.create_user(username=username,
+        CalendarUser.objects.create_user(username=username,
                                     email=email,
                                     password=password)
         return HttpResponse(status=201)
@@ -91,7 +92,7 @@ def calendarMonth(request, year, month):
             return_json.append(dict)
         events = list(Event.objects.filter(year = year, month = month).values())
         for event in events:
-            event['author'] = User.objects.get(id=event['author_id']).username
+            event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
             return_json[int(event['date'])-1]['events'].append(event)
         return JsonResponse(return_json, safe=False, status=200)
@@ -104,7 +105,7 @@ def calendarDate(request):
         return_json = {}
         events = list(Event.objects.filter(year = year, month = month, date = date).values())
         for event in events:
-            event['author'] = User.objects.get(id=event['author_id']).username
+            event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
         return_json['events'] = events
         return_json['year'] = year
@@ -240,7 +241,7 @@ def comments(request, id):
             return HttpResponse(status = 404)
         return_json = list(event.comment.all().values())
         for event in return_json:
-            event['author'] = User.obkects.get(id=event['author_id']).username
+            event['author'] = CalendarUser.obkects.get(id=event['author_id']).username
             del event['author_id']
         return JsonResponse(return_json, safe = False, status = 200)
 
@@ -290,7 +291,7 @@ def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects.filter(title__icontains=keyword).values())
         for event in events:
-            event['author']= User.objects.get(id=event['author_id']).username
+            event['author']= CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
         return JsonResponse(events, safe=False)
     else:
@@ -301,10 +302,10 @@ def myevents(request):
         participated_events = list(user.participated_events.all().values())
         interested_events = list(user.interested_events.all().values())
         for event in participated_events:
-            event['author']= User.objects.get(id=event['author_id']).username
+            event['author']= CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
         for event in interested_events:
-            event['author']= User.objects.get(id=event['author_id']).username
+            event['author']= CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
         return_json = {
             "participated_events" : participated_events,
