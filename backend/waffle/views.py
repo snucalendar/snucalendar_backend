@@ -91,7 +91,7 @@ def calendarMonth(request, year, month):
             return_json.append(dict)
         events = list(Event.objects.filter(year = year, month = month).values())
         for event in events:
-            event['author'] = User.objects.get(id=survey['author_id']).username
+            event['author'] = User.objects.get(id=event['author_id']).username
             del event['author_id']
             return_json[int(event['date'])-1]['events'].append(event)
         return JsonResponse(return_json, safe=False, status=200)
@@ -104,7 +104,7 @@ def calendarDate(request):
         return_json = {}
         events = list(Event.objects.filter(year = year, month = month, date = date).values())
         for event in events:
-            event['author'] = User.objects.get(id=survey['author_id']).username
+            event['author'] = User.objects.get(id=event['author_id']).username
             del event['author_id']
         return_json['events'] = events
         return_json['year'] = year
@@ -240,7 +240,7 @@ def comments(request, id):
             return HttpResponse(status = 404)
         return_json = list(event.comment.all().values())
         for event in return_json:
-            event['author'] = User.obkects.get(id=survey['author_id']).username
+            event['author'] = User.obkects.get(id=event['author_id']).username
             del event['author_id']
         return JsonResponse(return_json, safe = False, status = 200)
 
@@ -290,8 +290,8 @@ def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects.filter(title__icontains=keyword).values())
         for event in events:
-            event['author']= User.objects.get(id=survey['author_id']).username
-            del survey['author_id']
+            event['author']= User.objects.get(id=event['author_id']).username
+            del event['author_id']
         return JsonResponse(events, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -301,11 +301,11 @@ def myevents(request):
         participated_events = list(user.participated_events.all().values())
         interested_events = list(user.interested_events.all().values())
         for event in participated_events:
-            event['author']= User.objects.get(id=survey['author_id']).username
-            del survey['author_id']
+            event['author']= User.objects.get(id=event['author_id']).username
+            del event['author_id']
         for event in interested_events:
-            event['author']= User.objects.get(id=survey['author_id']).username
-            del survey['author_id']
+            event['author']= User.objects.get(id=event['author_id']).username
+            del event['author_id']
         return_json = {
             "participated_events" : participated_events,
             "interested_events" : interested_events
