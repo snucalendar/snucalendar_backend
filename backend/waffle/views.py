@@ -5,11 +5,10 @@ from datetime import datetime, date
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
-from users import CalendarUser
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .models import Event, Rating, Comment
+from .models import Event, Rating, Comment, CalendarUser
 
 
 
