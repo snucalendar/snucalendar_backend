@@ -22,6 +22,7 @@ class Like(models.Model):
     
 class Posting(models.Model):
     title = models.CharField(max_length=100)
+    upload_date = models.DateTimeField()
     content = models.TextField()
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'posting')
     image = models.ImageField(upload_to='uploads/%Y/%m/%d/')
