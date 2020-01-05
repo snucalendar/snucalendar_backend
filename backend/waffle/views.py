@@ -245,6 +245,7 @@ def search(request, keyword):
         return JsonResponse(events, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
+
 def myevents(request):
     if request.method == 'GET':
         user = request.user
@@ -264,3 +265,16 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+def posting(reqeust, id):
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        pass
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])   
+
+def postdate_pagination(request, start, interval):
+    pass
+
+def duedate_pagination(request, start, interval):
+    pass
