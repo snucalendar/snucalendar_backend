@@ -14,12 +14,12 @@ urlpatterns = [
     path('events/', views.events, name = 'events'),
     path('events/<int:id>/', views.event, name = 'event'),
     path('events/<int:id>/participate/', views.participate, name = 'participate'),
-    path('events/<int:id>/rating/', views.rating, name = 'rating'),
-    path('events/<int:id>/comments/', views.comments, name='comments'),
-    path('events/<int:id>/comments/<int:cid>/', views.comment, name='comment'),
+    path('events/<int:id>/like/', views.like, name = 'like'),
 
     path('search/<str:keyword>/', views.search, name='search'),
 
-    path('myevents/', views.myevents, name = 'myevents')
+    path('myevents/', views.myevents, name = 'myevents'),
+
+    path('events/<int:id>/post/')
     
 ]

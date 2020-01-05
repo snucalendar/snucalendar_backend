@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .models import Event, Rating, Comment
+from .models import Event, Like, Posting
 from users.models import CalendarUser
 
 
@@ -139,8 +139,8 @@ def events(request):
                         time = time, 
                         type = type)
         new_event.save()
-        new_rating = Rating(rating = 0, event = new_event)
-        new_rating.save()
+        new_like = Like(like = 0, event = new_event)
+        new_like.save()
         return HttpResponse(status = 201)
     else: 
         return HttpResponseNotAllowed(['POST'])
@@ -157,7 +157,7 @@ def event(request, id):
             "date" : event.year+'/'+event.month+'/'+event.date,
             "time" : event.time.strftime("%H::%M::%S"),
             "type" : event.type,
-            "rating" : event.rating.rating
+            "like" : event.like.like
         }
         return JsonResponse(return_json, safe=False, status=200)
 
@@ -216,76 +216,25 @@ def participate(request, id):
     else:
         return HttpResponseNotAllowed(['POST'])
 
-def rating(request):
+def like(request, id):
     if request.method == 'POST':
         try:
             req_data = json.loads(request.body.decode())
-            rating = req_data['rating']
+            like = req_data['like']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponse(status=400)
         try:
             event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
-        event.rating.rating = rating
-        event.rating.user.add(request.user)
+        if event.like.user.filter(id=request.user.id).count == 0:
+            event.like.user.add(request.user)
+            event.like.like += event.like.like
+        else:
+            pass
         return HttpResponse(status = 200)
     else:
         return HttpResponseNotAllowed(['POST'])
-
-def comments(request, id):
-    if request.method == 'GET':
-        try:
-            event = Event.objects.get(id=id)
-        except Event.DoesNotExist:
-            return HttpResponse(status = 404)
-        return_json = list(event.comment.all().values())
-        for event in return_json:
-            event['author'] = CalendarUser.obkects.get(id=event['author_id']).username
-            del event['author_id']
-        return JsonResponse(return_json, safe = False, status = 200)
-
-    elif request.method == 'POST':
-        try:
-            req_data = json.loads(request.body.decode())
-            comment = req_data['comment']
-        except (KeyError, json.decoder.JSONDecodeError):
-            return HttpResponseBadRequest()
-        try:
-            event = Event.objects.get(id=id)
-        except Event.DoesNotExist:
-            return HttpResponse(status=404)
-        new_comment = Comment(comment = comment, author = request.user, event = event)
-        new_event.save()
-        return HttpResponse(status = 200)
-    else:
-        return HttpResponseNotAllowed(['GET','POST'])
-
-def comment(request, id, cid):
-    if request.method == 'PUT':
-        try:
-            req_data = json.loads(request.body.decode())
-            comment = req_data['comment']
-        except (KeyError, json.decoder.JSONDecodeError):
-            return HttpResponseBadRequest()
-        try:
-            comment_object = Comment.objects.get(id=id)
-        except Comment.DoesNotExist:
-            return HttpResponse(status = 404)
-        comment_object.comment = comment
-        comment_object.save()
-        return HttpResponse(status=200)
-        
-    elif request.method == 'DELETE':
-        try:
-            comment = Comment.objects.get(id=id)
-        except Comment.DoesNotExist:
-            return HttpResponse(status = 404)
-        comment.delete()
-        return HttpResponse(status=200)
-
-    else:
-        return HttpResponseNotAllowed(['PUT', 'DELETE'])
 
 def search(request, keyword):
     if request.method == 'GET':
@@ -314,5 +263,4 @@ def myevents(request):
         return JsonResponse(return_json, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
-
 
