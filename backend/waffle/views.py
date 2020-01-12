@@ -7,11 +7,20 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django import forms
 
 from .models import Event, Like, Posting
 from users.models import CalendarUser
 
 
+
+class PostingForm(forms.Form):
+    """Image upload form."""
+    title = forms.CharField(max_length=100)
+    image = forms.ImageField()
+    content = forms.CharField(widget = forms.Textarea)
+
+    
 
 @ensure_csrf_cookie
 def token(request):
@@ -266,9 +275,17 @@ def myevents(request):
         return HttpResponseNotAllowed(['GET'])
 
 def posting(reqeust, id):
-    if request.method == 'GET':
-        pass
-    elif request.method == 'POST':
+    if request.method == 'POST':
+        user = request.user
+        form = ImageUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = form.cleaned_data['image']
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+        else:
+            return HttpResponseBadRequest()
+        Posting
+    elif request.method == 'GET':
         pass
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])   
