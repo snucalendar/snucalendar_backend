@@ -120,11 +120,11 @@
 }
 ```
 
-## POST /api/rating/<int:id>
+## POST /api/like/<int:id>
 ##### Request
 ``` json
 {
-    "rating" : 3
+    "like" : 3
 }
 ```
 
