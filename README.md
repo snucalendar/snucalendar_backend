@@ -123,9 +123,7 @@
 ## POST /api/like/<int:id>
 ##### Request
 ``` json
-{
-    "like" : 3
-}
+{}
 ```
 
 ## GET /api/myevents
