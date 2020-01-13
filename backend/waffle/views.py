@@ -1,6 +1,8 @@
 import json
 from json import JSONDecodeError
 from datetime import datetime, date
+from PIL import Image
+from io import BytesIO
 
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -228,19 +230,15 @@ def participate(request, id):
 def like(request, id):
     if request.method == 'POST':
         try:
-            req_data = json.loads(request.body.decode())
-            like = req_data['like']
-        except (KeyError, json.decoder.JSONDecodeError):
-            return HttpResponse(status=400)
-        try:
             event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         if event.like.user.filter(id=request.user.id).count == 0:
             event.like.user.add(request.user)
-            event.like.like += event.like.like
+            event.like.like += 1
         else:
-            pass
+            event.like.user.remove(request.user)
+            event -= 1
         return HttpResponse(status = 200)
     else:
         return HttpResponseNotAllowed(['POST'])
@@ -274,7 +272,7 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-def posting(reqeust, id):
+def postings(reqeust, id):
     if request.method == 'POST':
         user = request.user
         form = ImageUploadForm(request.POST, request.FILES)
@@ -284,12 +282,33 @@ def posting(reqeust, id):
             content = form.cleaned_data['content']
         else:
             return HttpResponseBadRequest()
-        Posting
+        try:
+            event = Event.objects.get(id=id)
+        except:
+            return HttpResponse(status=404)
+        
+        new_posting = Posting(title = title,
+            image = image,
+            content = content,
+            author = user
+            event = event)
+        new_posting.save()
+        return HttpResponse(status=200)
+        
     elif request.method == 'GET':
+        try:
+            event = Event.objects.get(id=id)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+        postings = list(Posting.objects.filter(event=event).values())
+        return JsonResponse(postings ,safe=False)
+
         pass
     else:
-        return HttpResponseNotAllowed(['GET', 'POST'])   
+        return HttpResponseNotAllowed(['POST', 'GET'])   
 
+def posting(request, id):
+    pass
 def postdate_pagination(request, start, interval):
     pass
 

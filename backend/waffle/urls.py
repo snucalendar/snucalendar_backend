@@ -20,7 +20,9 @@ urlpatterns = [
 
     path('myevents/', views.myevents, name = 'myevents'),
 
-    path('events/<int:id>/posting/', views.posting, name='posting'),
+    
+    path('events/<int:id>/posting/', views.postings, name='postings'),
+    path('posting/<int:id>/', views.posting, name = 'posting'),
     path('posting/postdate/<int:start>/<int:interval>/', views.postdate_pagination , name='postdate_pagination'),
     path('posting/duedate/<int:start>/<int:interval>/', views.duedate_pagination, name='duedate_pagenation'),
     
