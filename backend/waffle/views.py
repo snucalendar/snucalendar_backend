@@ -301,7 +301,7 @@ def postings(request, id):
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         postings = list(Posting.objects.filter(event=event).values())
-        return JsonResponse(json_dump(postings), safe=False)
+        return JsonResponse(json_dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
@@ -320,7 +320,7 @@ def posting(request, id):
         upload_date : posting.upload_date
     }
 
-    return JsonResponse(json_dump(return_dic), safe=False)
+    return JsonResponse(json_dumps(return_dic), safe=False)
 
 def postdate_pagination(request, start, interval):
     pass
