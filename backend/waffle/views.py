@@ -93,6 +93,11 @@ def getUserInfo(request):
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
+        this_month = datetime.date(year, month, 1)
+        if month == 12:
+            next_month = datetime.date(year+1, 1, 1)
+        else:
+            next_month = datetime.date(year, month+1, 1)
         for i in range(1, 31):
             dict = {
                 "year" : year,
@@ -101,7 +106,7 @@ def calendarMonth(request, year, month):
                 "events" : []
             }
             return_json.append(dict)
-        events = list(Event.objects.filter(year = year, month = month).values())
+        events = list(Event.objects.filter(date__gte = this_month, date__lt = next_month).values())
         for event in events:
             event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
@@ -111,10 +116,10 @@ def calendarMonth(request, year, month):
         return HttpResponseNotAllowed(['GET'])
 
 
-def calendarDate(request):
+def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
-        events = list(Event.objects.filter(year = year, month = month, date = date).values())
+        events = list(Event.objects.filter(date = datetime.date(year, month, date)).values())
         for event in events:
             event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
@@ -143,10 +148,8 @@ def events(request):
 
         new_event = Event(title = title,
                         author = author, 
-                        content = content, 
-                        year = date.year,
-                        month = date.month,
-                        date = date.date, 
+                        content = content,
+                        date = date, 
                         time = time, 
                         type = type)
         new_event.save()
@@ -165,7 +168,7 @@ def event(request, id):
         return_json = {
             "title" : event.title,
             "content" : event.content,
-            "date" : event.year+'/'+event.month+'/'+event.date,
+            "date" : event.date.strftime("%Y/%m/%d"),
             "time" : event.time.strftime("%H::%M::%S"),
             "type" : event.type,
             "like" : event.like.like
@@ -191,9 +194,7 @@ def event(request, id):
             return HttpResponse(status=404)
         event.title = title
         event.content = content
-        event.year = date.year
-        event.month = date.month
-        event.date = date.date
+        event.date = date
         event.time = time
         event.type = type
         return HttpResponse(status = 200)
@@ -309,24 +310,34 @@ def postings(request, id):
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
 def posting(request, id):
-    try:
-        posting = Posting.objects.get(id=id)
-    except Posting.DoesNotExist:
-        return HttpResponse(status=404)
-    
-    return_dic = {
-        "title" : posting.title,
-        "image" : posting.image,
-        "author" : CalendarUser.get(id=posting.author_id).username,
-        "event" : posting.event,
-        "content" : posting.content,
-        "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
-    }
-
-    return JsonResponse(json.dumps(return_dic), safe=False)
+    if request.method == 'GET':
+        try:
+            posting = Posting.objects.get(id=id)
+        except Posting.DoesNotExist:
+            return HttpResponse(status=404)
+        
+        return_dic = {
+            "title" : posting.title,
+            "image" : posting.image,
+            "author" : CalendarUser.get(id=posting.author_id).username,
+            "event" : posting.event,
+            "content" : posting.content,
+            "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
+        }
+        return JsonResponse(json.dumps(return_dic), safe=False)
+    else:
+        return HttpResponseNotAllowed(['GET'])
 
 def postdate_pagination(request, start, interval):
-    
+    if request.method == 'GET':
+        postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1])
+        return JsonResponse(json.dumps(postings), safe=False)
+    else:
+        return HttpResponseNotAllowed(['GET'])
 
 def duedate_pagination(request, start, interval):
-    pass
+    if request.method == 'GET':
+        postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1])
+        return JsonResponse(json.dumps(postings), safe=False)
+    else:
+        return HttpResponseNotAllowed(['GET'])
