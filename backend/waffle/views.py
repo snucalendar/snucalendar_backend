@@ -330,14 +330,14 @@ def posting(request, id):
 
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
-        postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1])
+        postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1].values())
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
 
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
-        postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1])
+        postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1].values())
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
