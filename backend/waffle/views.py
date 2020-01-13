@@ -301,6 +301,9 @@ def postings(request, id):
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         postings = list(Posting.objects.filter(event=event).values())
+        for posting in postings:
+            posting.upload_date = posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
+
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
@@ -317,7 +320,7 @@ def posting(request, id):
         author : CalendarUser.get(id=posting.author_id).username,
         event : posting.event,
         content : posting.content,
-        upload_date : posting.upload_date
+        upload_date : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
     }
 
     return JsonResponse(json.dumps(return_dic), safe=False)
