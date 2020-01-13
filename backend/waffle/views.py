@@ -331,6 +331,8 @@ def posting(request, id):
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1].values())
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -338,6 +340,8 @@ def postdate_pagination(request, start, interval):
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1].values())
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
