@@ -290,7 +290,7 @@ def postings(reqeust, id):
         new_posting = Posting(title = title,
             image = image,
             content = content,
-            author = user
+            author = user,
             event = event)
         new_posting.save()
         return HttpResponse(status=200)
