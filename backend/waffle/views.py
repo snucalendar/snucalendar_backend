@@ -302,7 +302,7 @@ def postings(request, id):
             return HttpResponse(status=404)
         postings = list(Posting.objects.filter(event=event).values())
         for posting in postings:
-            posting.upload_date = posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
 
         return JsonResponse(json.dumps(postings), safe=False)
     else:
