@@ -315,18 +315,18 @@ def posting(request, id):
         return HttpResponse(status=404)
     
     return_dic = {
-        title : posting.title,
-        image : posting.image,
-        author : CalendarUser.get(id=posting.author_id).username,
-        event : posting.event,
-        content : posting.content,
-        upload_date : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
+        "title" : posting.title,
+        "image" : posting.image,
+        "author" : CalendarUser.get(id=posting.author_id).username,
+        "event" : posting.event,
+        "content" : posting.content,
+        "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
     }
 
     return JsonResponse(json.dumps(return_dic), safe=False)
 
 def postdate_pagination(request, start, interval):
-    pass
+    
 
 def duedate_pagination(request, start, interval):
     pass
