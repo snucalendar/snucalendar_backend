@@ -272,7 +272,7 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-def postings(reqeust, id):
+def postings(request, id):
     if request.method == 'POST':
         user = request.user
         form = ImageUploadForm(request.POST, request.FILES)
@@ -301,14 +301,27 @@ def postings(reqeust, id):
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         postings = list(Posting.objects.filter(event=event).values())
-        return JsonResponse(postings ,safe=False)
-
-        pass
+        return JsonResponse(json_dump(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
 def posting(request, id):
-    pass
+    try:
+        posting = Posting.objects.get(id=id)
+    except Posting.DoesNotExist:
+        return HttpResponse(status=404)
+    
+    return_dic = {
+        title : posting.title,
+        image : posting.image,
+        author : CalendarUser.get(id=posting.author_id).username,
+        event : posting.event,
+        content : posting.content,
+        upload_date : posting.upload_date
+    }
+
+    return JsonResponse(json_dump(return_dic), safe=False)
+
 def postdate_pagination(request, start, interval):
     pass
 
