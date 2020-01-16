@@ -110,7 +110,7 @@ def calendarMonth(request, year, month):
         for event in events:
             event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
-            return_json[int(event['date'].date)-1]['events'].append(event)
+            return_json[int(event['date'].day)-1]['events'].append(event)
         return JsonResponse(return_json, safe=False, status=200)
     else:
         return HttpResponseNotAllowed(['GET'])
