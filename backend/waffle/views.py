@@ -93,9 +93,9 @@ def getUserInfo(request):
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
-        this_month = datetime.date(year, month, 1)
+        this_month = datetime.datetime(year, month, 1).date()
         if month == 12:
-            next_month = datetime.date(year+1, 1, 1)
+            next_month = datetime.datetime(year+1, 1, 1).date()
         else:
             next_month = datetime.date(year, month+1, 1)
         for i in range(1, 31):
@@ -119,7 +119,7 @@ def calendarMonth(request, year, month):
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
-        events = list(Event.objects.filter(date = datetime.date(year, month, date)).values())
+        events = list(Event.objects.filter(date = datetime.datetime(year, month, date).date()).values())
         for event in events:
             event['author'] = CalendarUser.objects.get(id=event['author_id']).username
             del event['author_id']
