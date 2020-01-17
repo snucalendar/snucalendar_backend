@@ -140,7 +140,7 @@ def events(request):
             content = req_data['content']
             date = req_data['date']
             time = req_data['time']
-            type = req_data['type']
+            event_type = req_data['event_type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
         date = datetime.strptime(date, '%Y/%m/%d').date()
@@ -151,7 +151,7 @@ def events(request):
                         content = content,
                         date = date, 
                         time = time, 
-                        type = type)
+                        event_type = event_type)
         new_event.save()
         new_like = Like(like = 0, event = new_event)
         new_like.save()
@@ -170,7 +170,7 @@ def event(request, id):
             "content" : event.content,
             "date" : event.date.strftime("%Y/%m/%d"),
             "time" : event.time.strftime("%H::%M::%S"),
-            "type" : event.type,
+            "event_type" : event.event_type,
             "like" : event.like.like
         }
         return JsonResponse(return_json, safe=False, status=200)
@@ -183,7 +183,7 @@ def event(request, id):
             content = req_data['content']
             date = req_data['date']
             time = req_data['time']
-            type = req_data['type']
+            event_type = req_data['event_type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
         date = datetime.strptime(date, '%Y/%m/%d').date()
@@ -196,7 +196,7 @@ def event(request, id):
         event.content = content
         event.date = date
         event.time = time
-        event.type = type
+        event.event_type = event_type
         return HttpResponse(status = 200)
 
     elif request.method == 'DELETE':
@@ -213,7 +213,7 @@ def participate(request, id):
     if request.method == 'POST':
         try:
             req_data = json.loads(request.body.decode())
-            type = req_data['type']
+            event_type = req_data['event_type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
         try:
@@ -221,9 +221,9 @@ def participate(request, id):
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         
-        if type == 'participate':
+        if event_type == 'participate':
             event.participate.add(request.user)
-        elif type == 'interested':
+        elif event_type == 'interested':
             event.interested.add(request.user)
     else:
         return HttpResponseNotAllowed(['POST'])

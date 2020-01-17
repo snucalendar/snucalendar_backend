@@ -9,7 +9,7 @@ class Event(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'event')
     date = models.DateField()
     time = models.TimeField()
-    type = models.CharField(max_length=50)
+    event_type = models.CharField(max_length=50)
     interest = models.ManyToManyField(get_user_model(), related_name = 'interested_event')
     participate = models.ManyToManyField(get_user_model(), related_name = 'participated_event')
 
