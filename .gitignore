@@ -25,23 +25,23 @@ media
 
 # Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
+/backend/build/
+/backend/develop-eggs/
+/backend/dist/
+/backend/downloads/
+/backend/eggs/
 .eggs/
 lib/
 lib64/
 parts/
 sdist/
-var/
-wheels/
-pip-wheel-metadata/
+backend/var/
+backend/wheels/
+backend/pip-wheel-metadata/
 share/python-wheels/
-*.egg-info/
+backend/*.egg-info/
 .installed.cfg
-*.egg
+backend/*.egg
 MANIFEST
 
 # PyInstaller
