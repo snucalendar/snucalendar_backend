@@ -2,7 +2,6 @@ import json
 from json import JSONDecodeError
 from datetime import datetime, date
 from PIL import Image
-from io import BytesIO
 
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
