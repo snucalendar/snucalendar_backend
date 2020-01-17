@@ -40,7 +40,7 @@ def login(request):
         except (KeyError, JSONDecodeError):
             return HttpResponseBadRequest()
 
-        user = authenticate(username=email, password=password)
+        user = authenticate(email=email, password=password)
         if user is not None:
             auth_login(request, user)
             return HttpResponse(status=204)
