@@ -62,8 +62,7 @@ def logout(request):
         return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest(['GET'])
-        
-@ensure_csrf_cookie
+
 def signup(request):  # create new
     if request.method == 'POST':
         try:
