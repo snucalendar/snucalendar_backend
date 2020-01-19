@@ -21,7 +21,14 @@ class PostingForm(forms.Form):
     image = forms.ImageField()
     content = forms.CharField(widget = forms.Textarea)
 
-    
+def check_logged_in(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if args and args[0].user.is_authenticated:
+            return func(*args, **kwargs)
+        return HttpResponse(status=401)
+
+    return wrapper
 
 @ensure_csrf_cookie
 def token(request):
@@ -55,7 +62,8 @@ def logout(request):
         return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest(['GET'])
-
+        
+@ensure_csrf_cookie
 def signup(request):  # create new
     if request.method == 'POST':
         try:
