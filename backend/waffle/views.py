@@ -52,9 +52,10 @@ def login(request):
             return HttpResponse(status=204)
         else:
             return HttpResponse(status=401)
-
+    elif request.method == 'OPTIONS':
+        return HttpResponse(status = 204)
     else:
-        return HttpResponseNotAllowed(['POST'])
+        return HttpResponseNotAllowed(['POST', 'OPTIONS'])
 
 def logout(request):
     if request.method == 'GET':
