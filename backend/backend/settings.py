@@ -136,3 +136,4 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'X-CSRFTOKEN',
 ]
 SESSION_COOKIE_SAMESITE = None
+CSRF_COOKIE_SAMESITE = None
