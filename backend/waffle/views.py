@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django import forms
+from django.db.models import F
 
 from .models import Event, Like, Posting
 from users.models import CalendarUser
