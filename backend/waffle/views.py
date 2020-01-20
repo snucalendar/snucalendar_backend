@@ -117,7 +117,8 @@ def calendarMonth(request, year, month):
         events = list(Event.objects
             .select_related('author')
             .filter(date__gte = this_month, date__lt = next_month)
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', author=F('author__username')))
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'author__username')
+            .annotate(author = F('author__username')))
         for event in events:
             return_json[int(event['date'].day)-1]['events'].append(event)
         return JsonResponse(return_json, safe=False, status=200)
