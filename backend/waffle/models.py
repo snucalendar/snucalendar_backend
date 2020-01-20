@@ -4,10 +4,10 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 
 class Event(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, db_index=True)
     content = models.TextField()
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'event')
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     time = models.TimeField()
     event_type = models.CharField(max_length=50)
     interest = models.ManyToManyField(get_user_model(), related_name = 'interested_event')
@@ -19,7 +19,7 @@ class Like(models.Model):
     event = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'like')
     
 class Posting(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, db_index=True)
     upload_date = models.DateTimeField(auto_now = True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name = 'posting', null=True)
     content = models.TextField()
