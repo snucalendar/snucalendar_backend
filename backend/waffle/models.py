@@ -16,7 +16,7 @@ class Event(models.Model):
 class Like(models.Model):
     user = models.ManyToManyField(get_user_model(), related_name = 'likes')
     like = models.IntegerField(default = 0)
-    event = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'like')
+    event = models.ForeignKey('Event', on_delete=models.CASCADE, related_name = 'like')
     
 class Posting(models.Model):
     title = models.CharField(max_length=100, db_index=True)
