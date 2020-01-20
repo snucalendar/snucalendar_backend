@@ -311,7 +311,10 @@ def postings(request, id):
         postings = list(Posting.objects.filter(event=event).values())
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-
+            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
+            del posting['author_id']
+            posting['event'] = posting['event_id']
+            del posting['event_id']
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
@@ -340,6 +343,10 @@ def postdate_pagination(request, start, interval):
         postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1].values())
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
+            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
+            del posting['author_id']
+            posting['event'] = posting['event_id']
+            del posting['event_id']
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -349,6 +356,24 @@ def duedate_pagination(request, start, interval):
         postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1].values())
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
+            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
+            del posting['author_id']
+            posting['event'] = posting['event_id']
+            del posting['event_id']
+        return JsonResponse(json.dumps(postings), safe=False)
+    else:
+        return HttpResponseNotAllowed(['GET'])
+
+
+def posting_search(request, keyword):
+    if request.method == 'GET':
+        postings = list(Posting.objects.filter(title__icontains=keyword).values())
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
+            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
+            del posting['author_id']
+            posting['event'] = posting['event_id']
+            del posting['event_id']
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
