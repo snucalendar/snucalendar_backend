@@ -176,6 +176,7 @@ def event(request, id):
         return_json = {
             "title" : event.title,
             "content" : event.content,
+            "author" : event.author.username
             "date" : event.date.strftime("%Y/%m/%d"),
             "time" : event.time.strftime("%H::%M::%S"),
             "event_type" : event.event_type,
