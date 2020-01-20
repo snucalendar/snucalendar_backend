@@ -178,7 +178,7 @@ def event(request, id):
             "date" : event.date.strftime("%Y/%m/%d"),
             "time" : event.time.strftime("%H::%M::%S"),
             "event_type" : event.event_type,
-            "like" : event.like.like
+            "like" : Like.objects.get(event=event).like
         }
         return JsonResponse(return_json, safe=False, status=200)
 
@@ -238,16 +238,27 @@ def participate(request, id):
 def like(request, id):
     if request.method == 'POST':
         try:
-            event = Event.objects.get(id=id)
+            like = Like.objects.get(event_id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
-        if event.like.user.filter(id=request.user.id).count == 0:
-            event.like.user.add(request.user)
-            event.like.like += 1
+        if like.user.filter(id=request.user.id).count == 0:
+            like.user.add(request.user)
+            like.like += 1
         else:
-            event.like.user.remove(request.user)
-            event -= 1
+            like.user.remove(request.user)
+            like.like -= 1
         return HttpResponse(status = 200)
+    elif request.method == 'GET':
+        try:
+            like = Like.objects.get(event_id=id)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+        response_dic = {}
+        if like.user.filter(id=request.user.id).count == 0:
+            response_dic['like'] = False
+        else:
+            response_dic['like'] = True
+        return JsonResponse(json.dumps(response_dic),safe=False )
     else:
         return HttpResponseNotAllowed(['POST'])
 
