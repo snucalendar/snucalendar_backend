@@ -333,7 +333,7 @@ def postings(request, id):
             .select_related('author', 'event')
             .filter(event_id=id)
             .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
@@ -364,7 +364,7 @@ def postdate_pagination(request, start, interval):
             .all()
             .order_by('-upload_date')[start-1:start+interval-1]
             .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -376,7 +376,7 @@ def duedate_pagination(request, start, interval):
             .all()
             .order_by('-event__date')[start-1:start+interval-1]
             .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
 
         return JsonResponse(json.dumps(postings), safe=False)
     else:
