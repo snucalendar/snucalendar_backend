@@ -110,7 +110,7 @@ def calendarMonth(request, year, month):
             next_month = datetime(year+1, 1, 1).date()
         else:
             next_month = datetime(year, month+1, 1).date()
-        for i in range(1, 31):
+        for i in range(1, 32):
             dict = {
                 "year" : year,
                 "month" : month,
