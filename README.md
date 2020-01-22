@@ -69,9 +69,12 @@
 {
     "title" : "title",
     "content" : "content of event",
+    "author" : "username of author"
     "date" : "date of event(format : ‘YYYY/MM/DD’)",
     "time" : "specific time of event(format : ‘HH::MM:SS’)",
-    "type" : "festival"
+    "event_type" : "festival",
+    "interest" : [관심을 표시한 사람들 id],
+    "list" : ["참여한 사람들 id"]
 }
 ```
 
@@ -83,8 +86,8 @@
     "content" : "content",
     "date" : "date of event",
     "time" : "specific time of the event",
-    "type" : "festival",
-    "rating" : "5"
+    "event_type" : "festival",
+    "like" : "좋아요 개수"
 }
 ```
 
@@ -96,8 +99,8 @@
     "content" : "changed content",
     "date" : "changed date of event",
     "time" : "changed specific time of the event",
-    "type" : "changed festival",
-    "rating" : "2"
+    "event_type" : "changed festival",
+    "like" : "좋아요 개수"
 }
 ```
 
@@ -125,6 +128,11 @@
 ``` json
 {}
 ```
+현재 좋아요 <-> 취소 상태를 toggle
+
+## GET /api/like/<int:id>
+##### Request
+좋아요 개수를 받아옴
 
 ## GET /api/myevents
 ##### Response
