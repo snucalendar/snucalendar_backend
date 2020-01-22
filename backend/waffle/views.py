@@ -333,7 +333,7 @@ def postings(request, id):
             .select_related('author', 'event')
             .filter(event_id=id)
             .values('title', 'content', 'image', 'upload_date')
-            .annotate(author = F('author__username'), event = id))
+            .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
