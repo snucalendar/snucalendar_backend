@@ -332,8 +332,10 @@ def postings(request, id):
         postings = list(Posting.objects
             .select_related('author', 'event')
             .filter(event_id=id)
-            .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+            .values('title', 'content', 'image', 'upload_date')
+            .annotate(author = F('author__username'), event = F('event')))
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
@@ -341,7 +343,7 @@ def postings(request, id):
 def posting(request, id):
     if request.method == 'GET':
         try:
-            posting = Posting.objects.select_related('author').get(id=id)
+            posting = Posting.objects.select_related('author', 'event').get(id=id)
         except Posting.DoesNotExist:
             return HttpResponse(status=404)
         
@@ -349,7 +351,7 @@ def posting(request, id):
             "title" : posting.title,
             "image" : posting.image,
             "author" : posting.author.username,
-            "event" : posting.event,
+            "event" : posting.event.id,
             "content" : posting.content,
             "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
         }
@@ -362,9 +364,11 @@ def postdate_pagination(request, start, interval):
         postings = list(Posting.objects
             .select_related('author', 'event')
             .all()
-            .order_by('-upload_date')[start-1:start+interval-1]
-            .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+            .order_by('-upload_date')
+            .values('title', 'content', 'image', 'upload_date')
+            .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -374,10 +378,11 @@ def duedate_pagination(request, start, interval):
         postings = list(Posting.objects
             .select_related('author', 'event')
             .all()
-            .order_by('-event__date')[start-1:start+interval-1]
-            .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = F('event'), upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
-
+            .order_by('-event__date')
+            .values('title', 'content', 'image', 'upload_date')
+            .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -389,8 +394,9 @@ def posting_search(request, keyword):
             .select_related('author', 'event')
             .filter(title__icontains=keyword)
             .values('title', 'content', 'image')
-            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
-
+            .annotate(author = F('author__username'), event = F('event')))
+        for posting in postings:
+            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
