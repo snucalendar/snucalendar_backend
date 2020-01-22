@@ -344,7 +344,7 @@ def posting(request, id):
         return_dic = {
             "title" : posting.title,
             "image" : posting.image,
-            "author" : CalendarUser.get(id=posting.author_id).username,
+            "author" : CalendarUser.object.get(id=posting.author_id).username,
             "event" : posting.event,
             "content" : posting.content,
             "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
