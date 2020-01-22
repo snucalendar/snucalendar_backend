@@ -11,10 +11,14 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django import forms
 from django.db.models import F
 
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.cache import cache_page
+
 from .models import Event, Like, Posting
 from users.models import CalendarUser
 
-
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 class PostingForm(forms.Form):
     """Image upload form."""
@@ -98,6 +102,7 @@ def getUserInfo(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
@@ -125,7 +130,7 @@ def calendarMonth(request, year, month):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-
+@cache_page(CACHE_TTL)
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
@@ -142,6 +147,7 @@ def calendarDate(request, year, month, date):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def events(request):
     if request.method == 'POST':
         try:
@@ -170,6 +176,7 @@ def events(request):
     else: 
         return HttpResponseNotAllowed(['POST'])
 
+@cache_page(CACHE_TTL)
 def event(request, id):
     if request.method == 'GET':
         try:
@@ -273,6 +280,7 @@ def like(request, id):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+@cache_page(CACHE_TTL)
 def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects
@@ -284,6 +292,7 @@ def search(request, keyword):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def myevents(request):
     if request.method == 'GET':
         user = request.user
@@ -305,6 +314,7 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def postings(request, id):
     if request.method == 'POST':
         user = request.user
@@ -340,6 +350,7 @@ def postings(request, id):
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
+@cache_page(CACHE_TTL)
 def posting(request, id):
     if request.method == 'GET':
         try:
@@ -359,6 +370,7 @@ def posting(request, id):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -373,12 +385,13 @@ def postdate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
             .select_related('author', 'event')
             .all()
-            .order_by('-event__date')
+            .order_by('-event__date','-event__time')
             .values('title', 'content', 'image', 'upload_date')
             .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
         for posting in postings:
@@ -387,7 +400,7 @@ def duedate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-
+@cache_page(CACHE_TTL)
 def posting_search(request, keyword):
     if request.method == 'GET':
         postings = list(Posting.objects
