@@ -102,6 +102,7 @@ def getUserInfo(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@cache_page(CACHE_TTL)
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
