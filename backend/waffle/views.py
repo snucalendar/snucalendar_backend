@@ -129,10 +129,11 @@ def calendarMonth(request, year, month):
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
-        events = list(Event.objects.filter(date = datetime(year, month, date).date()).values())
-        for event in events:
-            event['author'] = CalendarUser.objects.get(id=event['author_id']).username
-            del event['author_id']
+        events = list(Event.objects
+            .select_related('author')
+            .filter(date = datetime(year, month, date).date())
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .annotate(author = F('author__username')))
         return_json['events'] = events
         return_json['year'] = year
         return_json['month'] = month
@@ -172,7 +173,7 @@ def events(request):
 def event(request, id):
     if request.method == 'GET':
         try:
-            event = Event.objects.get(id=id)
+            event = Event.objects.select_related('author').get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status = 404)
         return_json = {
@@ -208,6 +209,7 @@ def event(request, id):
         event.date = date
         event.time = time
         event.event_type = event_type
+        event.save()
         return HttpResponse(status = 200)
 
     elif request.method == 'DELETE':
@@ -234,8 +236,13 @@ def participate(request, id):
         
         if event_type == 'participate':
             event.participate.add(request.user)
+            event.interested.remove(request.user)
         elif event_type == 'interested':
+            event.participate.remove(request.user)
             event.interested.add(request.user)
+        else:
+            event.participate.remove(request.user)
+            event.interested.remove(request.user)
     else:
         return HttpResponseNotAllowed(['POST'])
 
@@ -268,10 +275,11 @@ def like(request, id):
 
 def search(request, keyword):
     if request.method == 'GET':
-        events = list(Event.objects.filter(title__icontains=keyword).values())
-        for event in events:
-            event['author']= CalendarUser.objects.get(id=event['author_id']).username
-            del event['author_id']
+        events = list(Event.objects
+            .select_related('author')
+            .filter(title__icontains=keyword)
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .annotate(author = F('author__username')))
         return JsonResponse(events, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -279,14 +287,16 @@ def search(request, keyword):
 def myevents(request):
     if request.method == 'GET':
         user = request.user
-        participated_events = list(user.participated_events.all().values())
-        interested_events = list(user.interested_events.all().values())
-        for event in participated_events:
-            event['author']= CalendarUser.objects.get(id=event['author_id']).username
-            del event['author_id']
-        for event in interested_events:
-            event['author']= CalendarUser.objects.get(id=event['author_id']).username
-            del event['author_id']
+        participated_events = list(user.participated_events
+            .select_related('author')
+            .all()
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .annotate(author = F('author__username')))
+        interested_events = list(user.interested_events
+            .select_related('author')
+            .all()
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .annotate(author = F('author__username')))
         return_json = {
             "participated_events" : participated_events,
             "interested_events" : interested_events
@@ -319,17 +329,11 @@ def postings(request, id):
         return HttpResponse(status=200)
         
     elif request.method == 'GET':
-        try:
-            event = Event.objects.get(id=id)
-        except Event.DoesNotExist:
-            return HttpResponse(status=404)
-        postings = list(Posting.objects.filter(event=event).values())
-        for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
-            del posting['author_id']
-            posting['event'] = posting['event_id']
-            del posting['event_id']
+        postings = list(Posting.objects
+            .select_related('author', 'event')
+            .filter(event_id=id)
+            .values('title', 'content', 'image')
+            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
@@ -337,14 +341,14 @@ def postings(request, id):
 def posting(request, id):
     if request.method == 'GET':
         try:
-            posting = Posting.objects.get(id=id)
+            posting = Posting.objects.select_related('author').get(id=id)
         except Posting.DoesNotExist:
             return HttpResponse(status=404)
         
         return_dic = {
             "title" : posting.title,
             "image" : posting.image,
-            "author" : CalendarUser.object.get(id=posting.author_id).username,
+            "author" : posting.author.username
             "event" : posting.event,
             "content" : posting.content,
             "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
@@ -355,26 +359,25 @@ def posting(request, id):
 
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
-        postings = list(Posting.objects.all().order_by('-upload_date')[start-1:start+interval-1].values())
-        for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
-            del posting['author_id']
-            posting['event'] = posting['event_id']
-            del posting['event_id']
+        postings = list(Posting.objects
+            .select_related('author', 'event')
+            .all()
+            .order_by('-upload_date')[start-1:start+interval-1]
+            .values('title', 'content', 'image')
+            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
 
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
-        postings = list(Posting.objects.all().order_by('-event__date')[start-1:start+interval-1].values())
-        for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
-            del posting['author_id']
-            posting['event'] = posting['event_id']
-            del posting['event_id']
+        postings = list(Posting.objects
+            .select_related('author', 'event')
+            .all()
+            .order_by('-event__date')[start-1:start+interval-1]
+            .values('title', 'content', 'image')
+            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -382,13 +385,12 @@ def duedate_pagination(request, start, interval):
 
 def posting_search(request, keyword):
     if request.method == 'GET':
-        postings = list(Posting.objects.filter(title__icontains=keyword).values())
-        for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['author']= CalendarUser.objects.get(id=posting['author_id']).username
-            del posting['author_id']
-            posting['event'] = posting['event_id']
-            del posting['event_id']
+        postings = list(Posting.objects
+            .select_related('author', 'event')
+            .filter(title__icontains=keyword)
+            .values('title', 'content', 'image')
+            .annotate(author = F('author__username'), event = id, upload_date = F('upload_date').strftime("%Y/%m/%d %H::%M::%S")))
+
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
