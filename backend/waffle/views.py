@@ -348,7 +348,7 @@ def posting(request, id):
         return_dic = {
             "title" : posting.title,
             "image" : posting.image,
-            "author" : posting.author.username
+            "author" : posting.author.username,
             "event" : posting.event,
             "content" : posting.content,
             "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
