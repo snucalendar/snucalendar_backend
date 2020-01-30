@@ -297,13 +297,13 @@ def search(request, keyword):
 def myevents(request):
     if request.method == 'GET':
         user = request.user
-        participated_events = list(Event.objects.
+        participated_events = list(Event.objects
             .filter(participate = user)
             .select_related('author')
             .prefetch_related('participate')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
-        interested_events = list(Event.objects.
+        interested_events = list(Event.objects
             .filter(interest = user)
             .select_related('author')
             .prefetch_related('interest')
@@ -336,13 +336,13 @@ def myevents_calendar(request, year, month):
                 "interested_events" : []
             }
             return_json.append(dict)
-        participated_events = list(Event.objects.
+        participated_events = list(Event.objects
             .filter(participate = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
             .prefetch_related('participate')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
-        interested_events = list(Event.objects.
+        interested_events = list(Event.objects
             .filter(interest = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
             .prefetch_related('interest')
