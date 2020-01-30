@@ -19,7 +19,7 @@ urlpatterns = [
     path('search/<str:keyword>/', views.search, name='search'),
 
     path('myevents/', views.myevents, name = 'myevents'),
-    path('myevents/<int:year>/<int:month>/', views.myevents_calendar, name = 'myevents_calendar')
+    path('myevents/<int:year>/<int:month>/', views.myevents_calendar, name = 'myevents_calendar'),
 
     path('events/<int:id>/posting/', views.postings, name='postings'),
     path('posting/<int:id>/', views.posting, name = 'posting'),
