@@ -122,7 +122,7 @@ def calendarMonth(request, year, month):
         events = list(Event.objects
             .select_related('author')
             .filter(date__gte = this_month, date__lt = next_month)
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         for event in events:
             return_json[int(event['date'].day)-1]['events'].append(event)
@@ -137,7 +137,7 @@ def calendarDate(request, year, month, date):
         events = list(Event.objects
             .select_related('author')
             .filter(date = datetime(year, month, date).date())
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return_json['events'] = events
         return_json['year'] = year
@@ -184,6 +184,7 @@ def event(request, id):
         except Event.DoesNotExist:
             return HttpResponse(status = 404)
         return_json = {
+            "id" : event.id,
             "title" : event.title,
             "content" : event.content,
             "author" : event.author.username,
@@ -286,7 +287,7 @@ def search(request, keyword):
         events = list(Event.objects
             .select_related('author')
             .filter(title__icontains=keyword)
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return JsonResponse(events, safe=False)
     else:
@@ -299,12 +300,12 @@ def myevents(request):
         participated_events = list(user.participated_events
             .select_related('author')
             .all()
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         interested_events = list(user.interested_events
             .select_related('author')
             .all()
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return_json = {
             "participated_events" : participated_events,
@@ -342,7 +343,7 @@ def postings(request, id):
         postings = list(Posting.objects
             .select_related('author', 'event')
             .filter(event_id=id)
-            .values('title', 'content', 'image', 'upload_date')
+            .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
@@ -359,6 +360,7 @@ def posting(request, id):
             return HttpResponse(status=404)
         
         return_dic = {
+            "id" : posting.id,
             "title" : posting.title,
             "image" : posting.image,
             "author" : posting.author.username,
@@ -377,7 +379,7 @@ def postdate_pagination(request, start, interval):
             .select_related('author', 'event')
             .all()
             .order_by('-upload_date')
-            .values('title', 'content', 'image', 'upload_date')
+            .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
@@ -392,7 +394,7 @@ def duedate_pagination(request, start, interval):
             .select_related('author', 'event')
             .all()
             .order_by('-event__date','-event__time')
-            .values('title', 'content', 'image', 'upload_date')
+            .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
@@ -406,7 +408,7 @@ def posting_search(request, keyword):
         postings = list(Posting.objects
             .select_related('author', 'event')
             .filter(title__icontains=keyword)
-            .values('title', 'content', 'image')
+            .values('title', 'content', 'image', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
