@@ -120,8 +120,8 @@ def calendarMonth(request, year, month):
             }
             return_json.append(dict)
         events = list(Event.objects
-            .select_related('author')
             .filter(date__gte = this_month, date__lt = next_month)
+            .select_related('author')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         for event in events:
@@ -135,8 +135,8 @@ def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
         events = list(Event.objects
-            .select_related('author')
             .filter(date = datetime(year, month, date).date())
+            .select_related('author')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return_json['events'] = events
@@ -285,8 +285,8 @@ def like(request, id):
 def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects
-            .select_related('author')
             .filter(title__icontains=keyword)
+            .select_related('author')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return JsonResponse(events, safe=False)
@@ -297,14 +297,16 @@ def search(request, keyword):
 def myevents(request):
     if request.method == 'GET':
         user = request.user
-        participated_events = list(user.participated_events
+        participated_events = list(Event.objects.
+            .filter(participate = user)
             .select_related('author')
-            .all()
+            .prefetch_related('participate')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
-        interested_events = list(user.interested_events
+        interested_events = list(Event.objects.
+            .filter(interest = user)
             .select_related('author')
-            .all()
+            .prefetch_related('interest')
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         return_json = {
@@ -312,6 +314,46 @@ def myevents(request):
             "interested_events" : interested_events
         }
         return JsonResponse(return_json, safe=False)
+    else:
+        return HttpResponseNotAllowed(['GET'])
+
+@cache_page(CACHE_TTL)
+def myevents_calendar(request, year, month):
+    if request.method == 'GET':
+        user = request.user
+        return_json = []
+        this_month = datetime(year, month, 1).date()
+        if month == 12:
+            next_month = datetime(year+1, 1, 1).date()
+        else:
+            next_month = datetime(year, month+1, 1).date()
+        for i in range(1, 32):
+            dict = {
+                "year" : year,
+                "month" : month,
+                "date" : i,
+                "participated_events" : [],
+                "interested_events" : []
+            }
+            return_json.append(dict)
+        participated_events = list(Event.objects.
+            .filter(participate = user, date__gte = this_month, date__lt = next_month)
+            .select_related('author')
+            .prefetch_related('participate')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
+            .annotate(author = F('author__username')))
+        interested_events = list(Event.objects.
+            .filter(interest = user, date__gte = this_month, date__lt = next_month)
+            .select_related('author')
+            .prefetch_related('interest')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
+            .annotate(author = F('author__username')))
+        for participated in participated_events:
+            return_json[int(participated['date'].day)-1]['participated_events'].append(participated)
+        for interested in interested_events:
+            return_json[int(interested['date'].day)-1]['interested_events'].append(interested)
+        return JsonResponse(return_json, safe=False)
+        
     else:
         return HttpResponseNotAllowed(['GET'])
 
@@ -341,8 +383,8 @@ def postings(request, id):
         
     elif request.method == 'GET':
         postings = list(Posting.objects
-            .select_related('author', 'event')
             .filter(event_id=id)
+            .select_related('author', 'event')
             .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
@@ -376,8 +418,8 @@ def posting(request, id):
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
-            .select_related('author', 'event')
             .all()
+            .select_related('author', 'event')
             .order_by('-upload_date')
             .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
@@ -391,8 +433,8 @@ def postdate_pagination(request, start, interval):
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
-            .select_related('author', 'event')
             .all()
+            .select_related('author', 'event')
             .order_by('-event__date','-event__time')
             .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
@@ -406,8 +448,8 @@ def duedate_pagination(request, start, interval):
 def posting_search(request, keyword):
     if request.method == 'GET':
         postings = list(Posting.objects
-            .select_related('author', 'event')
             .filter(title__icontains=keyword)
+            .select_related('author', 'event')
             .values('title', 'content', 'image', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
@@ -415,3 +457,4 @@ def posting_search(request, keyword):
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
+
