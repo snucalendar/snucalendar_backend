@@ -361,7 +361,7 @@ def myevents_calendar(request, year, month):
 def postings(request, id):
     if request.method == 'POST':
         user = request.user
-        form = ImageUploadForm(request.POST, request.FILES)
+        form = PostingForm(request.POST, request.FILES)
         if form.is_valid():
             image = form.cleaned_data['image']
             title = form.cleaned_data['title']
