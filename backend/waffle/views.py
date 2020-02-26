@@ -17,6 +17,7 @@ from django.views.decorators.cache import cache_page
 
 from .models import Event, Like, Posting
 from users.models import CalendarUser
+from django.core.cache import cache
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -147,7 +148,7 @@ def calendarDate(request, year, month, date):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
+
 def events(request):
     if request.method == 'POST':
         try:
@@ -172,6 +173,7 @@ def events(request):
         new_event.save()
         new_like = Like(like = 0, event = new_event)
         new_like.save()
+        cache.clear()
         return HttpResponse(status = 201)
     else: 
         return HttpResponseNotAllowed(['POST'])
@@ -218,6 +220,7 @@ def event(request, id):
         event.time = time
         event.event_type = event_type
         event.save()
+        cache.clear()
         return HttpResponse(status = 200)
 
     elif request.method == 'DELETE':
@@ -227,6 +230,7 @@ def event(request, id):
             return HttpResponse(status=404)
         event.delete()
         return HttpResponse(status = 200)
+        cache.clear()
     else:
         return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
 
@@ -379,6 +383,7 @@ def postings(request, id):
             author = user,
             event = event)
         new_posting.save()
+        cache.clear()
         return HttpResponse(status=200)
         
     elif request.method == 'GET':
@@ -466,7 +471,6 @@ def posting_events_list(request):
         events = list(Event.objects
             .filter(date__gte = today)
             .values('title','date', 'time', 'event_type', 'id'))
-        print(events)
         for event in events:
             return_json.append(event)
         return JsonResponse(return_json, safe=False, status=200)
