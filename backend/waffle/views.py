@@ -462,8 +462,9 @@ def posting_search(request, keyword):
 def posting_events_list(request):
     if request.method == 'GET':
         return_json = []
+        today = date.today()
         events = list(Event.objects
-            .filter(date__gte = date.today())
+            .filter(date__gte = today)
             .values('title','date', 'time', 'event_type', 'id'))
         print(events)
         for event in events:
