@@ -458,7 +458,7 @@ def posting_search(request, keyword):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
+
 def posting_events_list(request):
     if request.method == 'GET':
         return_json = []
