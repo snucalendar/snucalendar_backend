@@ -103,7 +103,6 @@ def getUserInfo(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
@@ -131,7 +130,6 @@ def calendarMonth(request, year, month):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
@@ -173,12 +171,11 @@ def events(request):
         new_event.save()
         new_like = Like(like = 0, event = new_event)
         new_like.save()
-        cache.clear()
+
         return HttpResponse(status = 201)
     else: 
         return HttpResponseNotAllowed(['POST'])
 
-@cache_page(CACHE_TTL)
 def event(request, id):
     if request.method == 'GET':
         try:
@@ -220,7 +217,6 @@ def event(request, id):
         event.time = time
         event.event_type = event_type
         event.save()
-        cache.clear()
         return HttpResponse(status = 200)
 
     elif request.method == 'DELETE':
@@ -230,7 +226,6 @@ def event(request, id):
             return HttpResponse(status=404)
         event.delete()
         return HttpResponse(status = 200)
-        cache.clear()
     else:
         return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
 
@@ -285,7 +280,6 @@ def like(request, id):
     else:
         return HttpResponseNotAllowed(['POST'])
 
-@cache_page(CACHE_TTL)
 def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects
@@ -297,7 +291,6 @@ def search(request, keyword):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def myevents(request):
     if request.method == 'GET':
         user = request.user
@@ -321,7 +314,6 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def myevents_calendar(request, year, month):
     if request.method == 'GET':
         user = request.user
@@ -361,7 +353,6 @@ def myevents_calendar(request, year, month):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def postings(request, id):
     if request.method == 'POST':
         user = request.user
@@ -383,7 +374,6 @@ def postings(request, id):
             author = user,
             event = event)
         new_posting.save()
-        cache.clear()
         return HttpResponse(status=200)
         
     elif request.method == 'GET':
@@ -398,7 +388,6 @@ def postings(request, id):
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
-@cache_page(CACHE_TTL)
 def posting(request, id):
     if request.method == 'GET':
         try:
@@ -419,7 +408,6 @@ def posting(request, id):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -434,7 +422,6 @@ def postdate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -449,7 +436,6 @@ def duedate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-@cache_page(CACHE_TTL)
 def posting_search(request, keyword):
     if request.method == 'GET':
         postings = list(Posting.objects
