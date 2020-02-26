@@ -465,6 +465,7 @@ def posting_events_list(request):
         events = list(Event.objects
             .filter(date__gte = date.today())
             .values('title','date', 'time', 'event_type', 'id'))
+        print(events)
         for event in events:
             return_json.append(event)
         return JsonResponse(return_json, safe=False, status=200)
