@@ -414,8 +414,8 @@ def postdate_pagination(request, start, interval):
             .all()
             .select_related('author', 'event')
             .order_by('-upload_date')
-            .values('title', 'content', 'image', 'upload_date', 'id')
-            .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
+            .values('title', 'content', 'image', 'upload_date', 'id', 'event_id')
+            .annotate(author = F('author__username'), event_date = F('event__date'))[start-1:start+interval-1])
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
@@ -428,8 +428,8 @@ def duedate_pagination(request, start, interval):
             .all()
             .select_related('author', 'event')
             .order_by('-event__date','-event__time')
-            .values('title', 'content', 'image', 'upload_date', 'id')
-            .annotate(author = F('author__username'), event = F('event'))[start-1:start+interval-1])
+            .values('title', 'content', 'image', 'upload_date', 'id', 'event_id')
+            .annotate(author = F('author__username'), event_date = F('event__date'))[start-1:start+interval-1])
         for posting in postings:
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
