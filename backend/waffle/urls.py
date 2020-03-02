@@ -7,6 +7,7 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('signup/', views.signup, name='signup'),
     path('userinfo/', views.getUserInfo, name='userinfo'),
+    path('checklogin/', views.checklogin, name='checklogin'),
 
     path('calendar/<int:year>/<int:month>/', views.calendarMonth, name='calendarMonth'),
     path('calendar/<int:year>/<int:month>/<int:date>/', views.calendarDate, name='calendarDate'),

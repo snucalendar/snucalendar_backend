@@ -36,6 +36,12 @@ def check_logged_in(func):
 
     return wrapper
 
+def checklogin(request):
+    if request.user.is_authenticated:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=401)
+
 @ensure_csrf_cookie
 def token(request):
     if request.method == 'GET':
