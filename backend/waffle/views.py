@@ -10,6 +10,7 @@ from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, Http
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django import forms
 from django.db.models import F
+from django.db import transaction
 
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -49,6 +50,7 @@ def token(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def login(request):
     if request.method == 'POST':
         try:
@@ -69,6 +71,7 @@ def login(request):
     else:
         return HttpResponseNotAllowed(['POST', 'OPTIONS'])
 
+@transaction.atomic
 def logout(request):
     if request.method == 'GET':
         auth_logout(request)
@@ -76,6 +79,7 @@ def logout(request):
     else:
         return HttpResponseBadRequest(['GET'])
 
+@transaction.atomic
 def signup(request):  # create new
     if request.method == 'POST':
         try:
@@ -95,7 +99,7 @@ def signup(request):  # create new
     else:
         return HttpResponseNotAllowed(['POST'])
 
-
+@transaction.atomic
 def getUserInfo(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -109,6 +113,7 @@ def getUserInfo(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def calendarMonth(request, year, month):
     if request.method == 'GET':
         return_json = []
@@ -136,6 +141,7 @@ def calendarMonth(request, year, month):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
@@ -152,7 +158,7 @@ def calendarDate(request, year, month, date):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-
+@transaction.atomic
 def events(request):
     if request.method == 'POST':
         try:
@@ -182,6 +188,7 @@ def events(request):
     else: 
         return HttpResponseNotAllowed(['POST'])
 
+@transaction.atomic
 def event(request, id):
     if request.method == 'GET':
         try:
@@ -235,6 +242,7 @@ def event(request, id):
     else:
         return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
 
+@transaction.atomic
 def participate(request, id):
     if request.method == 'POST':
         try:
@@ -259,6 +267,7 @@ def participate(request, id):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+@transaction.atomic
 def like(request, id):
     if request.method == 'POST':
         try:
@@ -286,6 +295,7 @@ def like(request, id):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+@transaction.atomic
 def search(request, keyword):
     if request.method == 'GET':
         events = list(Event.objects
@@ -297,6 +307,7 @@ def search(request, keyword):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def myevents(request):
     if request.method == 'GET':
         user = request.user
@@ -320,6 +331,7 @@ def myevents(request):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def myevents_calendar(request, year, month):
     if request.method == 'GET':
         user = request.user
@@ -359,6 +371,7 @@ def myevents_calendar(request, year, month):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def postings(request, id):
     if request.method == 'POST':
         user = request.user
@@ -394,6 +407,7 @@ def postings(request, id):
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])   
 
+@transaction.atomic
 def posting(request, id):
     if request.method == 'GET':
         try:
@@ -414,6 +428,7 @@ def posting(request, id):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def postdate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -429,6 +444,7 @@ def postdate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def duedate_pagination(request, start, interval):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -444,6 +460,7 @@ def duedate_pagination(request, start, interval):
     else:
         return HttpResponseNotAllowed(['GET'])
 
+@transaction.atomic
 def posting_search(request, keyword):
     if request.method == 'GET':
         postings = list(Posting.objects
@@ -457,7 +474,7 @@ def posting_search(request, keyword):
     else:
         return HttpResponseNotAllowed(['GET'])
 
-
+@transaction.atomic
 def posting_events_list(request):
     if request.method == 'GET':
         return_json = []
