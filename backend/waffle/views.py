@@ -136,10 +136,13 @@ def calendarMonth(request, year, month):
         events = list(Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related(Prefetch('interest__id', to_attr='interest_id'))
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest_id', 'interest', 'participate', 'id')
+            .values('title', 'content', 'date', 'time', 'event_type', 'id')
             .annotate(author = F('author__username')))
         for event in events:
+            interest = list(CalendarUser.objects.filter(interested_events__id = event['id']).value_list('id',flat=True))
+            participate = list(CalendarUser.objects.filter(participated_events__id = event['id']).value_list('id',flat=True))
+            event['interest'] = interest
+            event['participate'] = participate
             return_json[int(event['date'].day)-1]['events'].append(event)
         return JsonResponse(return_json, safe=False, status=200)
     else:
