@@ -139,8 +139,8 @@ def calendarMonth(request, year, month):
             .values('title', 'content', 'date', 'time', 'event_type', 'id')
             .annotate(author = F('author__username')))
         for event in events:
-            interest = list(CalendarUser.objects.filter(interested_event__id = event['id']).value_list('id',flat=True))
-            participate = list(CalendarUser.objects.filter(participated_event__id = event['id']).value_list('id',flat=True))
+            interest = list(CalendarUser.objects.filter(interested_event__id = event['id']).values_list('id',flat=True))
+            participate = list(CalendarUser.objects.filter(participated_event__id = event['id']).values_list('id',flat=True))
             event['interest'] = interest
             event['participate'] = participate
             return_json[int(event['date'].day)-1]['events'].append(event)
