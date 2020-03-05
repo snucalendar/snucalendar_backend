@@ -103,11 +103,13 @@ def signup(request):  # create new
 def getUserInfo(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            info = {'username': request.user.username,
+            info = {'id': request.user.id,
+                    'username': request.user.username,
                     'email': request.user.email}
             return JsonResponse(info, safe=False)
         else:
-            info = {'username': "",
+            info = {'id': '',
+                    'username': "",
                     'email' : ""}
             return JsonResponse(info, safe=False)
     else:
