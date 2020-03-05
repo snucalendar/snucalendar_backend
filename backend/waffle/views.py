@@ -10,6 +10,7 @@ from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse, Http
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django import forms
 from django.db.models import F
+from django.db.models import Prefetch
 from django.db import transaction
 
 from django.conf import settings
@@ -135,7 +136,7 @@ def calendarMonth(request, year, month):
         events = list(Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related(Prefetch('interest', to_attr='interest_id'))
+            .prefetch_related(Prefetch('interest__id', to_attr='interest_id'))
             .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         for event in events:
