@@ -137,7 +137,7 @@ def calendarMonth(request, year, month):
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
             .prefetch_related(Prefetch('interest__id', to_attr='interest_id'))
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
+            .values('title', 'content', 'date', 'time', 'event_type', 'interest_id', 'interest', 'participate', 'id')
             .annotate(author = F('author__username')))
         for event in events:
             return_json[int(event['date'].day)-1]['events'].append(event)
