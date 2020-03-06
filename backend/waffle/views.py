@@ -149,7 +149,6 @@ def calendarMonth(request, year, month):
                 'participate' : [],
                 'like' : [],
             }
-            print(event.title)
             for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
             for interested in event.interest.all():
@@ -167,8 +166,7 @@ def calendarDate(request, year, month, date):
         return_json = {}
         events = (Event.objects
             .filter(date = datetime(year, month, date).date())
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         return_json['events'] = []
         for event in events:
             event_dict = {
@@ -338,8 +336,7 @@ def search(request, keyword):
         return_json = []
         events = (Event.objects
             .filter(title__icontains=keyword)
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         for event in events:
             event_dict = {
                     'id' : event.id,
@@ -372,13 +369,11 @@ def myevents(request):
         interest_json = []
         participated_events = (Event.objects
             .filter(participate = user)
-            .select_related('author')
-            .prefetch_related('participate'))
+            .select_related('author'))
 
         interested_events = (Event.objects
             .filter(interest = user)
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         for event in participated_events:
             event_dict = {
                     'id' : event.id,
@@ -448,12 +443,10 @@ def myevents_calendar(request, year, month):
             return_json.append(dict)
         participated_events = (Event.objects
             .filter(participate = user, date__gte = this_month, date__lt = next_month)
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         interested_events = (Event.objects
             .filter(interest = user, date__gte = this_month, date__lt = next_month)
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         for event in participated_events:
             event_dict = {
                     'id' : event.id,
