@@ -135,8 +135,7 @@ def calendarMonth(request, year, month):
             return_json.append(dict)
         events = (Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
-            .select_related('author')
-            .prefetch_related('interest'))
+            .select_related('author'))
         for event in events:
             event_dict = {
                 'id' : event.id,
@@ -146,9 +145,9 @@ def calendarMonth(request, year, month):
                 'time' : event.time,
                 'event_type' : event.event_type,
                 'author' : event.author.username,
-                'interest' : event.interest.values_list('id', flat=True),
-                'participate' : event.participate.values_list('id', flat=True),
-                'like' : event.like.values_list('id', flat=True),
+                'interest' : event.interest,
+                'participate' : event.participate,
+                'like' : event.like,
             }
             print(event_dict)
             return_json[int(event_dict['date'].day)-1]['events'].append(event_dict)
