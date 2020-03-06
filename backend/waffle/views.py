@@ -146,16 +146,10 @@ def calendarMonth(request, year, month):
                 'time' : event.time.strftime("%H:%M:%S"),
                 'event_type' : event.event_type,
                 'author' : event.author,
-                'interest' : [],
-                'participate' : [],
-                'like' : [],
+                'interest' : list(event.interest),
+                'participate' : event.participate,
+                'like' : event.like,
             }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
     else:
