@@ -146,7 +146,7 @@ def calendarMonth(request, year, month):
                 'time' : event.time,
                 'event_type' : event.event_type,
                 'author' : event.author.username,
-                'interest' : event.interest,
+                'interest' : event.interest.values_list('id', flat=True),
                 'participate' : event.participate,
                 'like' : event.like,
             }
