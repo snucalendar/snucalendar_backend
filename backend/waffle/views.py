@@ -151,7 +151,7 @@ def calendarMonth(request, year, month):
             }
             for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
             for like in event.like.all():
                 event_dict['like'].append(like.id)
