@@ -150,7 +150,8 @@ def calendarMonth(request, year, month):
                 'participate' : event.participate,
                 'like' : event.like,
             }
-            return_json[int(event['date'].day)-1]['events'].append(event_dict)
+            print(event_dict)
+            return_json[int(event_dict['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
     else:
         return HttpResponseNotAllowed(['GET'])
