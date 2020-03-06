@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 
-from .models import Event, Like, Posting
+from .models import Event, Posting
 from users.models import CalendarUser
 from django.core.cache import cache
 
@@ -133,10 +133,10 @@ def calendarMonth(request, year, month):
                 "events" : []
             }
             return_json.append(dict)
-        events = Event.objects
+        events = (Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related('interest', 'participate', 'like')
+            .prefetch_related('interest', 'participate', 'like'))
         for event in events:
             event_dict = {
                 'id' : event.id,
@@ -165,10 +165,10 @@ def calendarMonth(request, year, month):
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
-        events = Event.objects
+        events = (Event.objects
             .filter(date = datetime(year, month, date).date())
             .select_related('author')
-            .prefetch_related('interest', 'participate', 'like')
+            .prefetch_related('interest', 'participate', 'like'))
         return_json['events'] = []
         for event in events:
             event_dict = {
@@ -336,10 +336,10 @@ def like(request, id):
 def search(request, keyword):
     if request.method == 'GET':
         return_json = []
-        events = Event.objects
+        events = (Event.objects
             .filter(title__icontains=keyword)
             .select_related('author')
-            .prefetch_related('interest', 'like', 'participate')
+            .prefetch_related('interest', 'like', 'participate'))
         for event in events:
             event_dict = {
                     'id' : event.id,
@@ -353,12 +353,12 @@ def search(request, keyword):
                     'participate' : [],
                     'like' : [],
                 }
-                for interested in event.interest:
-                    event_dict['interest'].append(interested.id)
-                for participant in event.participate:
-                    event_dict['participate'].append(participant.id)
-                for like in event.like:
-                    event_dict['like'].append(like.id)
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
             return_json.append(event_dict)
         return JsonResponse(return_json, safe=False)
     else:
@@ -370,15 +370,15 @@ def myevents(request):
         user = request.user
         participate_json = []
         interest_json = []
-        participated_events = Event.objects
+        participated_events = (Event.objects
             .filter(participate = user)
             .select_related('author')
-            .prefetch_related('participate', 'interest')
+            .prefetch_related('participate', 'interest'))
 
-        interested_events = Event.objects
+        interested_events = (Event.objects
             .filter(interest = user)
             .select_related('author')
-            .prefetch_related('interest', 'participate')
+            .prefetch_related('interest', 'participate'))
         for event in participated_events:
             event_dict = {
                     'id' : event.id,
@@ -392,12 +392,12 @@ def myevents(request):
                     'participate' : [],
                     'like' : [],
                 }
-                for interested in event.interest:
-                    event_dict['interest'].append(interested.id)
-                for participant in event.participate:
-                    event_dict['participate'].append(participant.id)
-                for like in event.like:
-                    event_dict['like'].append(like.id)
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
             participate_json.append(event_dict)
         for event in interested_events:
             event_dict = {
@@ -412,12 +412,12 @@ def myevents(request):
                     'participate' : [],
                     'like' : [],
                 }
-                for interested in event.interest:
-                    event_dict['interest'].append(interested.id)
-                for participant in event.participate:
-                    event_dict['participate'].append(participant.id)
-                for like in event.like:
-                    event_dict['like'].append(like.id)  
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)  
             interest_json.append(event_dict)    
         return_json = {
             "participated_events" : participate_json,
@@ -446,14 +446,14 @@ def myevents_calendar(request, year, month):
                 "interested_events" : []
             }
             return_json.append(dict)
-        participated_events = Event.objects
+        participated_events = (Event.objects
             .filter(participate = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related('interest', 'participate', 'like')
-        interested_events = Event.objects
+            .prefetch_related('interest', 'participate', 'like'))
+        interested_events = (Event.objects
             .filter(interest = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related('interest', 'participate', 'like')
+            .prefetch_related('interest', 'participate', 'like'))
         for event in participated_events:
             event_dict = {
                     'id' : event.id,
@@ -467,12 +467,12 @@ def myevents_calendar(request, year, month):
                     'participate' : [],
                     'like' : [],
                 }
-                for interested in event.interest:
-                    event_dict['interest'].append(interested.id)
-                for participant in event.participate:
-                    event_dict['participate'].append(participant.id)
-                for like in event.like:
-                    event_dict['like'].append(like.id)
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['participated_events'].append(event)
         for event in interested_events:
             event_dict = {
@@ -487,12 +487,12 @@ def myevents_calendar(request, year, month):
                     'participate' : [],
                     'like' : [],
                 }
-                for interested in event.interest:
-                    event_dict['interest'].append(interested.id)
-                for participant in event.participate:
-                    event_dict['participate'].append(participant.id)
-                for like in event.like:
-                    event_dict['like'].append(like.id)
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['interested_events'].append(event)
         return JsonResponse(return_json, safe=False)
         
