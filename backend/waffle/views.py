@@ -136,7 +136,9 @@ def calendarMonth(request, year, month):
         events = (Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related(Prefetch('interest', to_attr = 'interest'), Prefetch('participate', to_attr = 'participate'), Prefetch('like', to_attr = 'like')))
+            .prefetch_related('interest')
+            .prefetch_related('participate')
+            .prefetch_related('like'))
         for event in events:
             event_dict = {
                 'id' : event.id,
