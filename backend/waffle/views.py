@@ -150,11 +150,11 @@ def calendarMonth(request, year, month):
                 'participate' : [],
                 'like' : [],
             }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
@@ -183,11 +183,11 @@ def calendarDate(request, year, month, date):
                 'participate' : [],
                 'like' : [],
             }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             return_json['events'].append(event_dict)
         return_json['year'] = year
@@ -244,11 +244,11 @@ def event(request, id):
             "interest" : [],
             "participate" : []
         }
-        for interested in event.interest:
+        for interested in event.interest.all():
             event_dict['interest'].append(interested.id)
-        for participant in event.participate:
+        for participant in event.participate.all():
             event_dict['participate'].append(participant.id)
-        for like in event.like:
+        for like in event.like.all():
             event_dict['like'].append(like.id)
         return JsonResponse(event_dict, safe=False, status=200)
 
@@ -353,11 +353,11 @@ def search(request, keyword):
                     'participate' : [],
                     'like' : [],
                 }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             return_json.append(event_dict)
         return JsonResponse(return_json, safe=False)
@@ -392,11 +392,11 @@ def myevents(request):
                     'participate' : [],
                     'like' : [],
                 }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             participate_json.append(event_dict)
         for event in interested_events:
@@ -412,11 +412,11 @@ def myevents(request):
                     'participate' : [],
                     'like' : [],
                 }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)  
             interest_json.append(event_dict)    
         return_json = {
@@ -467,11 +467,11 @@ def myevents_calendar(request, year, month):
                     'participate' : [],
                     'like' : [],
                 }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['participated_events'].append(event)
         for event in interested_events:
@@ -487,11 +487,11 @@ def myevents_calendar(request, year, month):
                     'participate' : [],
                     'like' : [],
                 }
-            for interested in event.interest:
+            for interested in event.interest.all():
                 event_dict['interest'].append(interested.id)
-            for participant in event.participate:
+            for participant in event.participate.all():
                 event_dict['participate'].append(participant.id)
-            for like in event.like:
+            for like in event.like.all():
                 event_dict['like'].append(like.id)
             return_json[int(event['date'].day)-1]['interested_events'].append(event)
         return JsonResponse(return_json, safe=False)
