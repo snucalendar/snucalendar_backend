@@ -133,17 +133,30 @@ def calendarMonth(request, year, month):
                 "events" : []
             }
             return_json.append(dict)
-        events = list(Event.objects
+        events = Event.objects
             .filter(date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .values('title', 'content', 'date', 'time', 'event_type', 'id')
-            .annotate(author = F('author__username')))
+            .prefetch_related('interest', 'participate', 'like')
         for event in events:
-            interest = list(CalendarUser.objects.filter(interested_event__id = event['id']).values_list('id',flat=True))
-            participate = list(CalendarUser.objects.filter(participated_event__id = event['id']).values_list('id',flat=True))
-            event['interest'] = interest
-            event['participate'] = participate
-            return_json[int(event['date'].day)-1]['events'].append(event)
+            event_dict = {
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date.strftime("%Y-%m-%d"),
+                'time' : event.time.strftime("%H:%M:%S"),
+                'event_type' : event.event_type,
+                'author' : event.author,
+                'interest' : [],
+                'participate' : [],
+                'like' : [],
+            }
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
+            return_json[int(event['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -152,12 +165,31 @@ def calendarMonth(request, year, month):
 def calendarDate(request, year, month, date):
     if request.method == 'GET':
         return_json = {}
-        events = list(Event.objects
+        events = Event.objects
             .filter(date = datetime(year, month, date).date())
             .select_related('author')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
-        return_json['events'] = events
+            .prefetch_related('interest', 'participate', 'like')
+        return_json['events'] = []
+        for event in events:
+            event_dict = {
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date.strftime("%Y-%m-%d"),
+                'time' : event.time.strftime("%H:%M:%S"),
+                'event_type' : event.event_type,
+                'author' : event.author,
+                'interest' : [],
+                'participate' : [],
+                'like' : [],
+            }
+            for interested in event.interest:
+                event_dict['interest'].append(interested.id)
+            for participant in event.participate:
+                event_dict['participate'].append(participant.id)
+            for like in event.like:
+                event_dict['like'].append(like.id)
+            return_json['events'].append(event_dict)
         return_json['year'] = year
         return_json['month'] = month
         return_json['date'] = date
@@ -178,8 +210,8 @@ def events(request):
             event_type = req_data['event_type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
-        date = datetime.strptime(date, '%Y/%m/%d').date()
-        time = datetime.strptime(time, '%H::%M::%S').time()
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+        time = datetime.strptime(time, '%H:%M:%S').time()
 
         new_event = Event(title = title,
                         author = author, 
@@ -188,8 +220,6 @@ def events(request):
                         time = time, 
                         event_type = event_type)
         new_event.save()
-        new_like = Like(like = 0, event = new_event)
-        new_like.save()
 
         return HttpResponse(status = 201)
     else: 
@@ -202,17 +232,25 @@ def event(request, id):
             event = Event.objects.select_related('author').get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status = 404)
-        return_json = {
+        event_dict = {
             "id" : event.id,
             "title" : event.title,
             "content" : event.content,
             "author" : event.author.username,
             "date" : event.date.strftime("%Y/%m/%d"),
-            "time" : event.time.strftime("%H::%M::%S"),
+            "time" : event.time.strftime("%H:%M:%S"),
             "event_type" : event.event_type,
-            "like" : Like.objects.get(event=event).like
+            "like" : [],
+            "interest" : [],
+            "participate" : []
         }
-        return JsonResponse(return_json, safe=False, status=200)
+        for interested in event.interest:
+            event_dict['interest'].append(interested.id)
+        for participant in event.participate:
+            event_dict['participate'].append(participant.id)
+        for like in event.like:
+            event_dict['like'].append(like.id)
+        return JsonResponse(event_dict, safe=False, status=200)
 
     elif request.method == 'PUT':
         try:
@@ -254,7 +292,7 @@ def participate(request, id):
     if request.method == 'POST':
         try:
             req_data = json.loads(request.body.decode())
-            event_type = req_data['event_type']
+            event_type = req_data['type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
         try:
@@ -278,39 +316,51 @@ def participate(request, id):
 def like(request, id):
     if request.method == 'POST':
         try:
-            like = Like.objects.get(event_id=id)
-        except Event.DoesNotExist:
-            return HttpResponse(status=404)
-        if like.user.filter(id=request.user.id).count == 0:
-            like.user.add(request.user)
-            like.like += 1
-        else:
-            like.user.remove(request.user)
-            like.like -= 1
-        return HttpResponse(status = 200)
-    elif request.method == 'GET':
+            req_data = json.loads(request.body.decode())
+            like = req_data['like']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
         try:
-            like = Like.objects.get(event_id=id)
+            event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
-        response_dic = {}
-        if like.user.filter(id=request.user.id).count == 0:
-            response_dic['like'] = False
+        if like == True:
+            event.like.add(request.user)
         else:
-            response_dic['like'] = True
-        return JsonResponse(json.dumps(response_dic),safe=False )
+            event.like.remove(request.user)
+        return HttpResponse(status = 200)
     else:
         return HttpResponseNotAllowed(['POST'])
 
 @transaction.atomic
 def search(request, keyword):
     if request.method == 'GET':
-        events = list(Event.objects
+        return_json = []
+        events = Event.objects
             .filter(title__icontains=keyword)
             .select_related('author')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
-        return JsonResponse(events, safe=False)
+            .prefetch_related('interest', 'like', 'participate')
+        for event in events:
+            event_dict = {
+                    'id' : event.id,
+                    'title': event.title,
+                    'content' : event.content,
+                    'date' : event.date.strftime("%Y-%m-%d"),
+                    'time' : event.time.strftime("%H:%M:%S"),
+                    'event_type' : event.event_type,
+                    'author' : event.author,
+                    'interest' : [],
+                    'participate' : [],
+                    'like' : [],
+                }
+                for interested in event.interest:
+                    event_dict['interest'].append(interested.id)
+                for participant in event.participate:
+                    event_dict['participate'].append(participant.id)
+                for like in event.like:
+                    event_dict['like'].append(like.id)
+            return_json.append(event_dict)
+        return JsonResponse(return_json, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
 
@@ -318,21 +368,60 @@ def search(request, keyword):
 def myevents(request):
     if request.method == 'GET':
         user = request.user
-        participated_events = list(Event.objects
+        participate_json = []
+        interest_json = []
+        participated_events = Event.objects
             .filter(participate = user)
             .select_related('author')
-            .prefetch_related('participate')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
-        interested_events = list(Event.objects
+            .prefetch_related('participate', 'interest')
+
+        interested_events = Event.objects
             .filter(interest = user)
             .select_related('author')
-            .prefetch_related('interest')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
+            .prefetch_related('interest', 'participate')
+        for event in participated_events:
+            event_dict = {
+                    'id' : event.id,
+                    'title': event.title,
+                    'content' : event.content,
+                    'date' : event.date.strftime("%Y-%m-%d"),
+                    'time' : event.time.strftime("%H:%M:%S"),
+                    'event_type' : event.event_type,
+                    'author' : event.author,
+                    'interest' : [],
+                    'participate' : [],
+                    'like' : [],
+                }
+                for interested in event.interest:
+                    event_dict['interest'].append(interested.id)
+                for participant in event.participate:
+                    event_dict['participate'].append(participant.id)
+                for like in event.like:
+                    event_dict['like'].append(like.id)
+            participate_json.append(event_dict)
+        for event in interested_events:
+            event_dict = {
+                    'id' : event.id,
+                    'title': event.title,
+                    'content' : event.content,
+                    'date' : event.date.strftime("%Y-%m-%d"),
+                    'time' : event.time.strftime("%H:%M:%S"),
+                    'event_type' : event.event_type,
+                    'author' : event.author,
+                    'interest' : [],
+                    'participate' : [],
+                    'like' : [],
+                }
+                for interested in event.interest:
+                    event_dict['interest'].append(interested.id)
+                for participant in event.participate:
+                    event_dict['participate'].append(participant.id)
+                for like in event.like:
+                    event_dict['like'].append(like.id)  
+            interest_json.append(event_dict)    
         return_json = {
-            "participated_events" : participated_events,
-            "interested_events" : interested_events
+            "participated_events" : participate_json,
+            "interested_events" : interest_json
         }
         return JsonResponse(return_json, safe=False)
     else:
@@ -357,22 +446,54 @@ def myevents_calendar(request, year, month):
                 "interested_events" : []
             }
             return_json.append(dict)
-        participated_events = list(Event.objects
+        participated_events = Event.objects
             .filter(participate = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related('participate')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
-        interested_events = list(Event.objects
+            .prefetch_related('interest', 'participate', 'like')
+        interested_events = Event.objects
             .filter(interest = user, date__gte = this_month, date__lt = next_month)
             .select_related('author')
-            .prefetch_related('interest')
-            .values('title', 'content', 'date', 'time', 'event_type', 'interest', 'participate', 'id')
-            .annotate(author = F('author__username')))
-        for participated in participated_events:
-            return_json[int(participated['date'].day)-1]['participated_events'].append(participated)
-        for interested in interested_events:
-            return_json[int(interested['date'].day)-1]['interested_events'].append(interested)
+            .prefetch_related('interest', 'participate', 'like')
+        for event in participated_events:
+            event_dict = {
+                    'id' : event.id,
+                    'title': event.title,
+                    'content' : event.content,
+                    'date' : event.date.strftime("%Y-%m-%d"),
+                    'time' : event.time.strftime("%H:%M:%S"),
+                    'event_type' : event.event_type,
+                    'author' : event.author,
+                    'interest' : [],
+                    'participate' : [],
+                    'like' : [],
+                }
+                for interested in event.interest:
+                    event_dict['interest'].append(interested.id)
+                for participant in event.participate:
+                    event_dict['participate'].append(participant.id)
+                for like in event.like:
+                    event_dict['like'].append(like.id)
+            return_json[int(event['date'].day)-1]['participated_events'].append(event)
+        for event in interested_events:
+            event_dict = {
+                    'id' : event.id,
+                    'title': event.title,
+                    'content' : event.content,
+                    'date' : event.date.strftime("%Y-%m-%d"),
+                    'time' : event.time.strftime("%H:%M:%S"),
+                    'event_type' : event.event_type,
+                    'author' : event.author,
+                    'interest' : [],
+                    'participate' : [],
+                    'like' : [],
+                }
+                for interested in event.interest:
+                    event_dict['interest'].append(interested.id)
+                for participant in event.participate:
+                    event_dict['participate'].append(participant.id)
+                for like in event.like:
+                    event_dict['like'].append(like.id)
+            return_json[int(event['date'].day)-1]['interested_events'].append(event)
         return JsonResponse(return_json, safe=False)
         
     else:
@@ -412,7 +533,7 @@ def postings(request, id):
             posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
-        return HttpResponseNotAllowed(['POST', 'GET'])   
+        return HttpResponseNotAllowed(['POST', 'GET'])
 
 @transaction.atomic
 def posting(request, id):
