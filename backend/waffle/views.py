@@ -575,8 +575,8 @@ def duedate_pagination(request, start, interval):
             .values('title', 'content', 'image', 'upload_date', 'id', 'event_id')
             .annotate(author = F('author__username'), event_date = F('event__date'))[start-1:start+interval-1])
         for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['event_date'] = posting['event_date'].strftime("%Y/%m/%d")
+            posting['upload_date'] = posting['upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
+            posting['event_date'] = posting['event_date'].strftime("%Y-%m-%d")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -590,7 +590,7 @@ def posting_search(request, keyword):
             .values('title', 'content', 'image', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
+            posting['upload_date'] = posting['upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])

@@ -11,7 +11,7 @@ class Event(models.Model):
     time = models.TimeField()
     event_type = models.CharField(max_length=50)
     interest = models.ManyToManyField(get_user_model(), related_name = 'interested_event')
-    participate = models.ManyToManyField(get_user_model(), related_name = 'participated_event'),
+    participate = models.ManyToManyField(get_user_model(), related_name = 'participated_event')
     like = models.ManyToManyField(get_user_model(), related_name = 'like_event')
     
 class Posting(models.Model):
