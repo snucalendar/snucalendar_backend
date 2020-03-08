@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 class Event(models.Model):
     title = models.CharField(max_length=100, db_index=True)
     content = models.TextField()
+    upload_date = models.DateTimeField(auto_now = True)
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'event')
     date = models.DateField(db_index=True)
     time = models.TimeField()
@@ -17,7 +18,20 @@ class Event(models.Model):
 class Posting(models.Model):
     title = models.CharField(max_length=100, db_index=True)
     upload_date = models.DateTimeField(auto_now = True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name = 'posting', null=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name = 'posting')
     content = models.TextField()
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'posting')
     image = models.ImageField(upload_to='uploads/%Y/%m/%d/')
+
+class EventComment(models.Model):
+    comment = models.TextField()
+    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name = 'event_comment')
+    event = models.ForeignKey(Event, on_delete = models.CASCADE, related_name = 'comment', db_index=True)
+    upload_date = models.DateTimeField(auto_now = True)
+
+class QnA(models.Model):
+    question = models.TextField()
+    answer = models.TextField()
+    question_author = models.ForeignKey(get_user_model(), on_delete = models.CASCADE, related_name = 'question')
+    answer_author = models.ForeignKey(get_user_model(), on_delete = models.CASCADE, related_name = 'answer', null = True)
+    event = models.ForeignKey(Event, on_delete = models.CASCADE, related_name = 'QnA', db_index=True)

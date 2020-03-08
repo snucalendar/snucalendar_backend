@@ -26,5 +26,10 @@ urlpatterns = [
     path('posting/postdate/<int:start>/<int:interval>/', views.postdate_pagination , name='postdate_pagination'),
     path('posting/duedate/<int:start>/<int:interval>/', views.duedate_pagination, name='duedate_pagenation'),
     path('posting/search/<str:keyword>/', views.posting_search, name = "posting_search"),
-    path('posting/events/', views.posting_events_list, name = 'posting_events_list')
+    path('posting/events/', views.posting_events_list, name = 'posting_events_list'),
+
+    path('events/<int:eid>/comments', views.comments, name = 'comments'),
+    path('events/<int:eid>/comments/<int:cid>' views.comment, name = 'comments')
+
+
 ]

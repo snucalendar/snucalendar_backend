@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.views.decorators.cache import cache_page
 
-from .models import Event, Posting
+from .models import Event, Posting, EventComment, QnA
 from users.models import CalendarUser
 from django.core.cache import cache
 
@@ -606,3 +606,80 @@ def posting_events_list(request):
         for event in events:
             return_json.append(event)
         return JsonResponse(return_json, safe=False, status=200)
+    else:
+        return HttpResponseNotAllowed(['GET'])
+
+
+@transaction.atomic
+def comments(request, eid):
+    if request.method == 'POST':
+        try:
+            req_data = json.loads(request.body.decode())
+            commment = req_data['comment']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
+        try: 
+            event = Event.objects.get(id=eid)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+        new_comment = EventComment(
+            comment = comment,
+            author = request.user,
+            event = event
+        )
+        new_comment.save()
+        return JsonResponse(return_json, safe=False, status=200)
+    elif request.method == 'GET' : 
+        try: 
+            event = Event.objects.get(id=eid)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+        comments = list(EventComment.objects
+        .filter(event=event)
+        .select_related('author')
+        .values('id', 'comment', 'upload_date')
+        .annotate(author = F('author__username')))
+        return JsonResponse(comments, safe=False, status=200)
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])
+        
+@transaction.atomic
+def comment(request, eid, cid):
+    if request.method == 'GET':
+        try: 
+            comment = EventComment.objects.get(id=cid).select_related('author', 'event')
+        except EventComment.DoesNotExist:
+            return HttpResponse(status=404)
+        
+        return_json = {
+            'comment' : comment.comment,
+            'author' : comment.author.username,
+            'event' : comment.event.id,
+            'upload_date' : comment.upload_date
+        }
+        return JsonResponse(return_json, safe=False, status=200)
+
+    elif request.method == 'PUT':
+        try:
+            req_data = json.loads(request.body.decode())
+            commment_data = req_data['comment']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
+        try: 
+            comment = EventComment.objects.get(id=cid)
+        except EventComment.DoesNotExist:
+            return HttpResponse(status=404)
+        comment.comment = comment_data
+        comment.save()
+        return HttpResponse(status = 200)
+
+    elif request.method == 'DELETE':
+        try: 
+            comment = EventComment.objects.get(id=cid)
+        except EventComment.DoesNotExist:
+            return HttpResponse(status=404)
+        comment.delete()
+        return HttpResponse(status = 200)
+
+    else:
+        return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
