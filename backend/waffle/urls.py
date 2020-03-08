@@ -29,7 +29,7 @@ urlpatterns = [
     path('posting/events/', views.posting_events_list, name = 'posting_events_list'),
 
     path('events/<int:eid>/comments', views.comments, name = 'comments'),
-    path('events/<int:eid>/comments/<int:cid>' views.comment, name = 'comments')
+    path('events/<int:eid>/comments/<int:cid>', views.comment, name = 'comments')
 
 
 ]
