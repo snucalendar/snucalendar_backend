@@ -148,7 +148,7 @@ def calendarMonth(request, year, month):
                 'interest_count' : event.interest.count,
                 'participate_count' : event.participate.count,
                 'like_count' : event.like.count,
-                'comment_count' : event.comment.count()
+                'comment_count' : event.comment.count(),
                 'qna_count' : event.QnA.count()
             }
             return_json[int(event_dict['date'].day)-1]['events'].append(event_dict)
