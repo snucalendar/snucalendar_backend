@@ -145,16 +145,12 @@ def calendarMonth(request, year, month):
                 'time' : event.time,
                 'event_type' : event.event_type,
                 'author' : event.author.username,
-                'interest' : [],
-                'participate' : [],
-                'like' : [],
+                'interest_count' : event.interest.count,
+                'participate_count' : event.participate.count,
+                'like_count' : event.like.count,
+                'comment_count' : event.comment.count()
+                'qna_count' : event.QnA.count()
             }
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
             return_json[int(event_dict['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
     else:
@@ -177,16 +173,12 @@ def calendarDate(request, year, month, date):
                 'time' : event.time,
                 'event_type' : event.event_type,
                 'author' : event.author,
-                'interest' : [],
-                'participate' : [],
-                'like' : [],
+                'interest' : event.interest.values_list('id', flat=True),
+                'participate' : event.participate.values_list('id', flat=True),
+                'like' : event.like.values_list('id', flat=True),
+                'comment' : event.comment.values_list('id', flat=True),
+                'qna' : event.qna.values_list('id', flat=True),
             }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
             return_json['events'].append(event_dict)
         return_json['year'] = year
         return_json['month'] = month
