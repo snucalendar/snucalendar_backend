@@ -28,8 +28,10 @@ urlpatterns = [
     path('posting/search/<str:keyword>/', views.posting_search, name = "posting_search"),
     path('posting/events/', views.posting_events_list, name = 'posting_events_list'),
 
-    path('events/<int:eid>/comments', views.comments, name = 'comments'),
-    path('events/<int:eid>/comments/<int:cid>', views.comment, name = 'comments')
+    path('events/<int:id>/comments/', views.comments, name = 'comments'),
+    path('events/<int:id>/comments/<int:cid>/', views.comment, name = 'comments'),
 
-
+    path('events/<int:id>/qna/', views.qna_list, name = 'QnA_list'),
+    path('events/<int:id>/qna/<int:qid>/', views.qna, name = 'QnA'),
+    path('events/<int:id>/qna/<int:qid>/answer', views.qna_answer, name = 'QnA_answer')
 ]

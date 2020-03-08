@@ -611,7 +611,7 @@ def posting_events_list(request):
 
 
 @transaction.atomic
-def comments(request, eid):
+def comments(request, id):
     if request.method == 'POST':
         try:
             req_data = json.loads(request.body.decode())
@@ -619,7 +619,7 @@ def comments(request, eid):
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
         try: 
-            event = Event.objects.get(id=eid)
+            event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         new_comment = EventComment(
@@ -628,10 +628,10 @@ def comments(request, eid):
             event = event
         )
         new_comment.save()
-        return JsonResponse(return_json, safe=False, status=200)
+        return HttpResponse(status=200)
     elif request.method == 'GET' : 
         try: 
-            event = Event.objects.get(id=eid)
+            event = Event.objects.get(id=id)
         except Event.DoesNotExist:
             return HttpResponse(status=404)
         comments = list(EventComment.objects
@@ -642,9 +642,9 @@ def comments(request, eid):
         return JsonResponse(comments, safe=False, status=200)
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
-        
+
 @transaction.atomic
-def comment(request, eid, cid):
+def comment(request, id, cid):
     if request.method == 'GET':
         try: 
             comment = EventComment.objects.get(id=cid).select_related('author', 'event')
@@ -683,3 +683,122 @@ def comment(request, eid, cid):
 
     else:
         return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
+
+@transaction.atomic
+def qna_list(request, id):
+    if request.method == 'POST':
+        try:
+            req_data = json.loads(request.body.decode())
+            question = req_data['question']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
+        try: 
+            event = Event.objects.get(id=id)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+        new_qna = QnA(
+            question = question,
+            author = request.user,
+            event = event,
+            completed = False
+        )
+        new_qna.save()
+        return JsonResponse(return_json, safe=False, status=200)
+
+    elif request.method == 'GET' : 
+        try: 
+            event = Event.objects.get(id=id)
+        except Event.DoesNotExist:
+            return HttpResponse(status=404)
+
+        uncompleted_qna = list(QnA.objects
+        .filter(event=event, completed=False)
+        .values('id', 'question', 'upload_date', 'completed')
+        .annotate(question_author = F('question_author__username')))
+        completed_qna = list(QnA.objects
+        .filter(event=event, completed=True)
+        .values('id', 'question', 'upload_date', 'answer', 'completed')
+        .annotate(question_author = F('question_author__username'), answer_author = F('answer_author__username')))
+        return_json = {
+            completed : completed_qna,
+            uncompleted : uncompleted_qna
+        }
+        return JsonResponse(return_json, safe=False, status=200)
+
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])
+
+def qna(request, id, qid):
+    if request.method == 'GET':
+        try: 
+            qna = QnA.objects.get(id=qid).select_related('event')
+        except QnA.DoesNotExist:
+            return HttpResponse(status=404)
+        return_json = {
+            'completed' : qna.completed,
+            'question' : qna.question,
+            'question_author' : qna.question_author.username,
+            'event' : qna.event.id,
+            'upload_date' : qna.upload_date
+        }
+        if qna.completed:
+            return_json['answer'] = qna.answer
+            return_json['answer_author'] = qna.answer_author.username
+        return JsonResponse(return_json, safe=False, status=200)
+
+    elif request.method == 'PUT':
+        try:
+            req_data = json.loads(request.body.decode())
+            question = req_data['question']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
+        try: 
+            qna = QnA.objects.get(id=qid)
+        except QnA.DoesNotExist:
+            return HttpResponse(status=404)
+        qna.question = question
+        qna.save()
+        return HttpResponse(status = 200)
+
+    elif request.method == 'DELETE':
+        try: 
+            qna = QnA.objects.get(id=qid)
+        except QnA.DoesNotExist:
+            return HttpResponse(status=404)
+        qna.delete()
+        return HttpResponse(status = 200)
+
+    else:
+        return HttpResponseNotAllowed(['GET', 'PUT', 'DELETE'])
+
+
+def qna_answer(request, id, qid):
+    if request.method == 'PUT':
+        try:
+            req_data = json.loads(request.body.decode())
+            answer = req_data['answer']
+        except (KeyError, json.decoder.JSONDecodeError):
+            return HttpResponseBadRequest()
+        try: 
+            qna = QnA.objects.get(id=qid)
+        except QnA.DoesNotExist:
+            return HttpResponse(status=404)
+        qna.answer = answer
+        qna.answer_author = request.user
+        qna.completed = True
+        qna.save()
+        return HttpResponse(status = 200)
+
+    elif request.method == 'DELETE':
+        try: 
+            qna = QnA.objects.get(id=qid)
+        except QnA.DoesNotExist:
+            return HttpResponse(status=404)
+        qna.answer = None
+        qna.answer_author = None
+        qna.completed = False
+        qna.save()
+        return HttpResponse(status = 200)
+
+    else:
+        return HttpResponseNotAllowed(['PUT', 'DELETE'])
