@@ -234,7 +234,7 @@ def event(request, id):
             'participate' : event.participate.values_list('id', flat=True),
             'like' : event.like.values_list('id', flat=True),
             'comment' : event.comment.values_list('id', flat=True),
-            'qna' : event.qna.values_list('id', flat=True),
+            'qna' : event.QnA.values_list('id', flat=True),
         }
         return JsonResponse(event_dict, safe=False, status=200)
 
