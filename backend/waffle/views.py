@@ -149,7 +149,7 @@ def calendarMonth(request, year, month):
                 'participate_count' : event.participate.count(),
                 'like_count' : event.like.count(),
                 'comment_count' : event.comment.count(),
-                'qna_count' : event.QnA.count()
+                'qna_count' : event.QnA.count(),
             }
             return_json[int(event_dict['date'].day)-1]['events'].append(event_dict)
         return JsonResponse(return_json, safe=False, status=200)
@@ -172,12 +172,12 @@ def calendarDate(request, year, month, date):
                 'date' : event.date,
                 'time' : event.time,
                 'event_type' : event.event_type,
-                'author' : event.author,
-                'interest' : event.interest.values_list('id', flat=True),
-                'participate' : event.participate.values_list('id', flat=True),
-                'like' : event.like.values_list('id', flat=True),
-                'comment' : event.comment.values_list('id', flat=True),
-                'qna' : event.qna.values_list('id', flat=True),
+                'author' : event.author.username,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
             }
             return_json['events'].append(event_dict)
         return_json['year'] = year
@@ -230,16 +230,12 @@ def event(request, id):
             "date" : event.date,
             "time" : event.time,
             "event_type" : event.event_type,
-            "like" : [],
-            "interest" : [],
-            "participate" : []
+            'interest' : event.interest.values_list('id', flat=True),
+            'participate' : event.participate.values_list('id', flat=True),
+            'like' : event.like.values_list('id', flat=True),
+            'comment' : event.comment.values_list('id', flat=True),
+            'qna' : event.qna.values_list('id', flat=True),
         }
-        for interested in event.interest.all():
-            event_dict['interest'].append(interested.id)
-        for participant in event.participate.all():
-            event_dict['participate'].append(participant.id)
-        for like in event.like.all():
-            event_dict['like'].append(like.id)
         return JsonResponse(event_dict, safe=False, status=200)
 
     elif request.method == 'PUT':
@@ -253,6 +249,7 @@ def event(request, id):
             event_type = req_data['event_type']
         except (KeyError, json.decoder.JSONDecodeError):
             return HttpResponseBadRequest()
+
         date = datetime.strptime(date, '%Y/%m/%d').date()
         time = datetime.strptime(time, '%H::%M::%S').time()
         try:
@@ -265,6 +262,7 @@ def event(request, id):
         event.time = time
         event.event_type = event_type
         event.save()
+
         return HttpResponse(status = 200)
 
     elif request.method == 'DELETE':
@@ -331,23 +329,19 @@ def search(request, keyword):
             .select_related('author'))
         for event in events:
             event_dict = {
-                    'id' : event.id,
-                    'title': event.title,
-                    'content' : event.content,
-                    'date' : event.date,
-                    'time' : event.time,
-                    'event_type' : event.event_type,
-                    'author' : event.author,
-                    'interest' : [],
-                    'participate' : [],
-                    'like' : [],
-                }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date,
+                'time' : event.time,
+                'event_type' : event.event_type,
+                'author' : event.author,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
+            }
             return_json.append(event_dict)
         return JsonResponse(return_json, safe=False)
     else:
@@ -368,43 +362,34 @@ def myevents(request):
             .select_related('author'))
         for event in participated_events:
             event_dict = {
-                    'id' : event.id,
-                    'title': event.title,
-                    'content' : event.content,
-                    'date' : event.date,
-                    'time' : event.time,
-                    'event_type' : event.event_type,
-                    'author' : event.author,
-                    'interest' : [],
-                    'participate' : [],
-                    'like' : [],
-                }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date,
+                'time' : event.time,
+                'event_type' : event.event_type,
+                'author' : event.author,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
+            }
             participate_json.append(event_dict)
         for event in interested_events:
             event_dict = {
-                    'id' : event.id,
-                    'title': event.title,
-                    'content' : event.content,
-                    'date' : event.date,
-                    'time' : event.time,
-                    'event_type' : event.event_type,
-                    'author' : event.author,
-                    'interest' : [],
-                    'participate' : [],
-                    'like' : [],
-                }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)  
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date,
+                'time' : event.time,
+                'event_type' : event.event_type,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
+            }
             interest_json.append(event_dict)    
         return_json = {
             "participated_events" : participate_json,
@@ -441,43 +426,35 @@ def myevents_calendar(request, year, month):
             .select_related('author'))
         for event in participated_events:
             event_dict = {
-                    'id' : event.id,
-                    'title': event.title,
-                    'content' : event.content,
-                    'date' : event.date,
-                    'time' : event.time,
-                    'event_type' : event.event_type,
-                    'author' : event.author,
-                    'interest' : [],
-                    'participate' : [],
-                    'like' : [],
-                }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date,
+                'time' : event.time,
+                'event_type' : event.event_type,
+                'author' : event.author.username,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
+            }
             return_json[int(event_dict['date'].day)-1]['participated_events'].append(event_dict)
         for event in interested_events:
             event_dict = {
-                    'id' : event.id,
-                    'title': event.title,
-                    'content' : event.content,
-                    'date' : event.date,
-                    'time' : event.time,
-                    'event_type' : event.event_type,
-                    'author' : event.author,
-                    'interest' : [],
-                    'participate' : [],
-                    'like' : [],
-                }
-            for interested in event.interest.all():
-                event_dict['interest'].append(interested.id)
-            for participant in event.participate.all():
-                event_dict['participate'].append(participant.id)
-            for like in event.like.all():
-                event_dict['like'].append(like.id)
+                'id' : event.id,
+                'title': event.title,
+                'content' : event.content,
+                'date' : event.date,
+                'time' : event.time,
+                'event_type' : event.event_type,
+                'author' : event.author.username,
+                'interest_count' : event.interest.count(),
+                'participate_count' : event.participate.count(),
+                'like_count' : event.like.count(),
+                'comment_count' : event.comment.count(),
+                'qna_count' : event.QnA.count(),
+            }
             return_json[int(event_dict['date'].day)-1]['interested_events'].append(event_dict)
         return JsonResponse(return_json, safe=False)
         
