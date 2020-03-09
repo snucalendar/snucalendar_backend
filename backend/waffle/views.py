@@ -230,11 +230,11 @@ def event(request, id):
             "date" : event.date,
             "time" : event.time,
             "event_type" : event.event_type,
-            'interest' : event.interest.values_list('id', flat=True),
-            'participate' : event.participate.values_list('id', flat=True),
-            'like' : event.like.values_list('id', flat=True),
-            'comment' : event.comment.values_list('id', flat=True),
-            'qna' : event.QnA.values_list('id', flat=True),
+            'interest' : list(event.interest.values_list('id', flat=True)),
+            'participate' : list(event.participate.values_list('id', flat=True)),
+            'like' : list(event.like.values_list('id', flat=True)),
+            'comment' : list(event.comment.values_list('id', flat=True)),
+            'qna' : list(event.QnA.values_list('id', flat=True)),
         }
         return JsonResponse(event_dict, safe=False, status=200)
 
