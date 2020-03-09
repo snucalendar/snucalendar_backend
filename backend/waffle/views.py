@@ -458,7 +458,7 @@ def myevents_calendar(request, year, month):
                 event_dict['participate'].append(participant.id)
             for like in event.like.all():
                 event_dict['like'].append(like.id)
-            return_json[int(event['date'].day)-1]['participated_events'].append(event)
+            return_json[int(event_dict['date'].day)-1]['participated_events'].append(event_dict)
         for event in interested_events:
             event_dict = {
                     'id' : event.id,
@@ -478,7 +478,7 @@ def myevents_calendar(request, year, month):
                 event_dict['participate'].append(participant.id)
             for like in event.like.all():
                 event_dict['like'].append(like.id)
-            return_json[int(event['date'].day)-1]['interested_events'].append(event)
+            return_json[int(event_dict['date'].day)-1]['interested_events'].append(event_dict)
         return JsonResponse(return_json, safe=False)
         
     else:
