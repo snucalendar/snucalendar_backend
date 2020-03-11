@@ -106,12 +106,19 @@ def getUserInfo(request):
         if request.user.is_authenticated:
             info = {'id': request.user.id,
                     'username': request.user.username,
-                    'email': request.user.email}
+                    'email': request.user.email,
+                    'participate' : list(request.user.participated_event.values_list('id', flat=True)),
+                    'like' : list(request.user.like_event.values_list('id', flat=True)),
+                    'interest' : list(request.user.interested_event.values_list('id', flat=True))}
+
             return JsonResponse(info, safe=False)
         else:
             info = {'id': '',
                     'username': "",
-                    'email' : ""}
+                    'email' : "",
+                    'participate' : [],
+                    'interest' : [],
+                    'like' : []}
             return JsonResponse(info, safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
