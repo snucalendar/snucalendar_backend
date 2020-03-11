@@ -297,13 +297,13 @@ def participate(request, id):
         
         if event_type == 'participate':
             event.participate.add(request.user)
-            event.interested.remove(request.user)
+            event.interest.remove(request.user)
         elif event_type == 'interested':
             event.participate.remove(request.user)
-            event.interested.add(request.user)
+            event.interest.add(request.user)
         else:
             event.participate.remove(request.user)
-            event.interested.remove(request.user)
+            event.interest.remove(request.user)
     else:
         return HttpResponseNotAllowed(['POST'])
 
