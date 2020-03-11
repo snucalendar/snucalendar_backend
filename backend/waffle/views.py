@@ -304,6 +304,7 @@ def participate(request, id):
         else:
             event.participate.remove(request.user)
             event.interest.remove(request.user)
+        return HttpResponse(status=200)
     else:
         return HttpResponseNotAllowed(['POST'])
 
