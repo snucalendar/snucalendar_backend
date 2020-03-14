@@ -704,8 +704,8 @@ def qna_list(request, id):
         .values('id', 'question', 'upload_date', 'answer', 'completed')
         .annotate(question_author = F('question_author__username'), answer_author = F('answer_author__username')))
         return_json = {
-            completed : completed_qna,
-            uncompleted : uncompleted_qna
+            "completed" : completed_qna,
+            "uncompleted" : uncompleted_qna
         }
         return JsonResponse(return_json, safe=False, status=200)
 
