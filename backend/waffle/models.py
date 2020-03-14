@@ -36,4 +36,5 @@ class QnA(models.Model):
     question_author = models.ForeignKey(get_user_model(), on_delete = models.CASCADE, related_name = 'question')
     answer_author = models.ForeignKey(get_user_model(), on_delete = models.CASCADE, related_name = 'answer', null = True, blank=True)
     event = models.ForeignKey(Event, on_delete = models.CASCADE, related_name = 'QnA', db_index=True)
-    upload_date = models.DateTimeField(auto_now = True)
+    question_upload_date = models.DateTimeField()
+    answer_upload_date = models.DateTimeField(null=True, blank=True)

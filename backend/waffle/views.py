@@ -507,7 +507,7 @@ def postings(request, id):
             .values('title', 'content', 'image', 'upload_date', 'id')
             .annotate(author = F('author__username'), event = F('event')))
         for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
+            posting['upload_date'] = posting['upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['POST', 'GET'])
@@ -527,7 +527,7 @@ def posting(request, id):
             "author" : posting.author.username,
             "event" : posting.event.id,
             "content" : posting.content,
-            "upload_date" : posting.upload_date.strftime("%Y/%m/%d %H::%M::%S")
+            "upload_date" : posting.upload_date.strftime("%Y-%m-%dT%H:%M:%S")
         }
         return JsonResponse(json.dumps(return_dic), safe=False)
     else:
@@ -543,8 +543,8 @@ def postdate_pagination(request, start, interval):
             .values('title', 'content', 'image', 'upload_date', 'id', 'event_id')
             .annotate(author = F('author__username'), event_date = F('event__date'))[start-1:start+interval-1])
         for posting in postings:
-            posting['upload_date'] = posting['upload_date'].strftime("%Y/%m/%d %H::%M::%S")
-            posting['event_date'] = posting['event_date'].strftime("%Y/%m/%d")
+            posting['upload_date'] = posting['upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
+            posting['event_date'] = posting['event_date'].strftime("%Y-%m-%d")
         return JsonResponse(json.dumps(postings), safe=False)
     else:
         return HttpResponseNotAllowed(['GET'])
@@ -684,12 +684,13 @@ def qna_list(request, id):
             question = question,
             author = request.user,
             event = event,
-            completed = False
+            completed = False,
+            question_upload_date = datetime.now()
         )
         new_qna.save()
         return JsonResponse(return_json, safe=False, status=200)
 
-    elif request.method == 'GET' : 
+    elif request.method == 'GET':
         try: 
             event = Event.objects.get(id=id)
         except Event.DoesNotExist:
@@ -697,12 +698,17 @@ def qna_list(request, id):
 
         uncompleted_qna = list(QnA.objects
         .filter(event=event, completed=False)
-        .values('id', 'question', 'upload_date', 'completed')
+        .values('id', 'question', 'completed', 'question_upload_date')
         .annotate(question_author = F('question_author__username')))
         completed_qna = list(QnA.objects
         .filter(event=event, completed=True)
-        .values('id', 'question', 'upload_date', 'answer', 'completed')
+        .values('id', 'question', 'answer', 'completed', 'question_upload_date', 'answer_upload_date')
         .annotate(question_author = F('question_author__username'), answer_author = F('answer_author__username')))
+        for qna in uncompleted_qna:
+            qna['question_upload_date'] = qna['question_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
+        for qna in completed:
+              qna['question_upload_date'] = qna['question_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
+              qna['answer_upload_date'] = qna['answer_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
         return_json = {
             "completed" : completed_qna,
             "uncompleted" : uncompleted_qna
@@ -723,11 +729,12 @@ def qna(request, id, qid):
             'question' : qna.question,
             'question_author' : qna.question_author.username,
             'event' : qna.event.id,
-            'upload_date' : qna.upload_date
+            'question_upload_date' : qna.question_upload_date
         }
         if qna.completed:
             return_json['answer'] = qna.answer
             return_json['answer_author'] = qna.answer_author.username
+            return_json['answer_upload_date'] = qna.answer_upload_date
         return JsonResponse(return_json, safe=False, status=200)
 
     elif request.method == 'PUT':
@@ -741,6 +748,7 @@ def qna(request, id, qid):
         except QnA.DoesNotExist:
             return HttpResponse(status=404)
         qna.question = question
+        qna.question_upload_date = datetime.now()
         qna.save()
         return HttpResponse(status = 200)
 
@@ -769,6 +777,7 @@ def qna_answer(request, id, qid):
             return HttpResponse(status=404)
         qna.answer = answer
         qna.answer_author = request.user
+        qna.answer_upload_date = datetime.now()
         qna.completed = True
         qna.save()
         return HttpResponse(status = 200)
@@ -780,6 +789,7 @@ def qna_answer(request, id, qid):
             return HttpResponse(status=404)
         qna.answer = None
         qna.answer_author = None
+        qna.answer_upload_date = None;
         qna.completed = False
         qna.save()
         return HttpResponse(status = 200)
