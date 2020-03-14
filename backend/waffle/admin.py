@@ -6,4 +6,6 @@ from .models import Event, Posting
 
 admin.site.register(Event)
 admin.site.register(Posting)
+admin.site.register(EventComment)
+admin.site.register(QnA)
 
