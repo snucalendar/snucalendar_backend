@@ -29,6 +29,13 @@ class PostingForm(forms.Form):
     image = forms.ImageField()
     content = forms.CharField(widget = forms.Textarea)
 
+class EventForm(forms.Form):
+    """Event upload Form"""
+    title = forms.CharField(max_length=100)
+    image = forms.ImageField()
+    content = forms.CharField(widget = forms.Textarea)
+
+
 def check_logged_in(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
