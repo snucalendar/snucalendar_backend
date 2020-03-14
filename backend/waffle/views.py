@@ -706,7 +706,7 @@ def qna_list(request, id):
         .annotate(question_author = F('question_author__username'), answer_author = F('answer_author__username')))
         for qna in uncompleted_qna:
             qna['question_upload_date'] = qna['question_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
-        for qna in completed:
+        for qna in completed_qna:
               qna['question_upload_date'] = qna['question_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
               qna['answer_upload_date'] = qna['answer_upload_date'].strftime("%Y-%m-%dT%H:%M:%S")
         return_json = {
