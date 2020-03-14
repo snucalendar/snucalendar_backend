@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Event, Posting
+from .models import Event, Posting, EventComment, QnA
 
 # Register your models here.
 
